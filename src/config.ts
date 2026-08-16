@@ -63,7 +63,7 @@ export const profileConfig: ProfileConfig = {
 			icon: "fa6-brands:github", // 图标代码可在 https://icones.js.org/ 查看
 			// 如果尚未包含对应图标集，需要先安装它
 			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://github.com/tamakara", 
+			url: "https://github.com/tamakara",
 		},
 	],
 };
