@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://tamakara.github.io/sitemap.xml
