@@ -74,6 +74,14 @@ export const licenseConfig: LicenseConfig = {
 	url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };
 
+export const giscusConfig = {
+	enable: true,
+	repo: "tamakara/tamakara.github.io",
+	repoId: "R_kgDOTjyLjw",
+	category: "Announcements",
+	categoryId: "DIC_kwDOTjyLj84DCCrY",
+};
+
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// 注意：部分样式（例如背景色）会被覆盖，详情见 astro.config.mjs 文件。
 	// 请选择深色主题，因为这个博客主题目前仅支持深色背景

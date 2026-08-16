@@ -1,0 +1,93 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { giscusConfig, siteConfig } from "../../config";
+
+interface Props {
+	lang?: string;
+}
+
+const { lang } = Astro.props;
+const isEnabled = giscusConfig.enable;
+
+const clientConfig = {
+	repo: giscusConfig.repo,
+	repoId: giscusConfig.repoId,
+	category: giscusConfig.category,
+	categoryId: giscusConfig.categoryId,
+	lang: (lang || siteConfig.lang).replace("_", "-"),
+};
+---
+
+{isEnabled && (
+	<section
+		class="card-base mb-4 px-6 py-5 md:px-9 onload-animation"
+		aria-labelledby="comments-title"
+	>
+		<h2
+			id="comments-title"
+			class="relative mb-4 pl-4 text-lg font-bold text-neutral-900 transition before:absolute before:left-0 before:top-[5.5px] before:h-4 before:w-1 before:rounded-md before:bg-[var(--primary)] dark:text-neutral-100"
+		>
+			{i18n(I18nKey.comments)}
+		</h2>
+		<div id="giscus-comments"></div>
+
+		<script
+			is:inline
+			data-swup-reload-script
+			define:vars={{ clientConfig }}
+		>
+			(() => {
+				const container = document.getElementById("giscus-comments");
+				if (!container || container.dataset.initialized === "true") return;
+
+				container.dataset.initialized = "true";
+				const getTheme = () =>
+					document.documentElement.classList.contains("dark")
+						? "transparent_dark"
+						: "light";
+
+				const script = document.createElement("script");
+				script.src = "https://giscus.app/client.js";
+				script.async = true;
+				script.crossOrigin = "anonymous";
+				script.setAttribute("data-repo", clientConfig.repo);
+				script.setAttribute("data-repo-id", clientConfig.repoId);
+				script.setAttribute("data-category", clientConfig.category);
+				script.setAttribute("data-category-id", clientConfig.categoryId);
+				script.setAttribute("data-mapping", "pathname");
+				script.setAttribute("data-strict", "0");
+				script.setAttribute("data-reactions-enabled", "1");
+				script.setAttribute("data-emit-metadata", "0");
+				script.setAttribute("data-input-position", "top");
+				script.setAttribute("data-theme", getTheme());
+				script.setAttribute("data-lang", clientConfig.lang);
+				script.setAttribute("data-loading", "lazy");
+			container.appendChild(script);
+
+				const syncTheme = () => {
+					const iframe = container.querySelector("iframe.giscus-frame");
+					iframe?.contentWindow?.postMessage(
+						{ giscus: { setConfig: { theme: getTheme() } } },
+						"https://giscus.app",
+					);
+				};
+				const themeObserver = new MutationObserver(syncTheme);
+				themeObserver.observe(document.documentElement, {
+					attributes: true,
+					attributeFilter: ["class"],
+				});
+
+				let removeSwupHook;
+				removeSwupHook = window.swup?.hooks?.on?.(
+					"content:replace",
+					() => {
+						themeObserver.disconnect();
+						removeSwupHook?.();
+					},
+					{ before: true },
+				);
+			})();
+		</script>
+	</section>
+)}
