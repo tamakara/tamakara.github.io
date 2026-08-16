@@ -8,6 +8,7 @@ import type {
 import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
+	name: "TAMAKARA",
 	title: "TAMAKARA's Blog",
 	subtitle: "",
 	lang: "zh_CN", // 语言代码，例如 'en'、'zh_CN'、'ja' 等。
