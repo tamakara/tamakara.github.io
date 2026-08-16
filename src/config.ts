@@ -56,24 +56,14 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/demo-avatar.png", // 相对于 /src 目录；如果以 '/' 开头，则相对于 /public 目录
 	name: "魂辛カラ",
-	bio: "INTJ。喜欢计算机、数学、二次元、音乐和可爱的东西。",
+	bio: "INTJ\n喜欢计算机、数学、二次元、音乐和可爱的东西。",
 	links: [
 		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // 图标代码可在 https://icones.js.org/ 查看
+			name: "GitHub",
+			icon: "fa6-brands:github", // 图标代码可在 https://icones.js.org/ 查看
 			// 如果尚未包含对应图标集，需要先安装它
 			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://twitter.com",
-		},
-		{
-			name: "Steam",
-			icon: "fa6-brands:steam",
-			url: "https://store.steampowered.com",
-		},
-		{
-			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/saicaca/fuwari",
+			url: "https://github.com/tamakara", 
 		},
 	],
 };
