@@ -1,5 +1,5 @@
 ---
-title: Linux基础操作
+title: Linux 基础操作
 published: 2026-09-09
 image: ''
 tags: [Linux, 操作系统, 运维]

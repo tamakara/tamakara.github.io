@@ -1,5 +1,5 @@
 ---
-title: Linux常用工具
+title: Linux 常用工具
 published: 2026-09-09
 image: ''
 tags: [Linux, 操作系统, 运维]
