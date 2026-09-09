@@ -1,7 +1,6 @@
 ---
 title: Linux基础操作
 published: 2026-09-09
-description: 'Linux基础操作'
 image: ''
 tags: [Linux, 操作系统, 运维]
 category: 学习笔记
