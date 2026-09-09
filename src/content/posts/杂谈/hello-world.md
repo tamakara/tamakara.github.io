@@ -2,7 +2,6 @@
 title: Hello World
 published: 2026-07-27
 updated: 2026-08-17
-description: '第一篇文章'
 image: ''
 tags: [博客]
 category: 杂谈

@@ -54,7 +54,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // 相对于 /src 目录；如果以 '/' 开头，则相对于 /public 目录
+	avatar: "assets/images/avatar.png", // 相对于 /src 目录；如果以 '/' 开头，则相对于 /public 目录
 	name: "魂辛カラ",
 	bio: "喜欢计算机、数学、二次元、音乐和可爱的东西。",
 	links: [
