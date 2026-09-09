@@ -6,18 +6,16 @@ image: ''
 tags: [Linux, 操作系统, 运维]
 category: 学习笔记
 ---
-
 > 本文以 **CentOS** 为主要环境，整理 Linux 日常使用和服务器管理中最基础的操作。
 >
 > 本文只介绍基础系统操作，不涉及需要额外安装的常用工具，例如 `tar`、`rsync`、`screen`、`nmap`、`sar`、`iostat`、`rz/sz` 等。
 
 ---
-
-# 一、终端快捷键
+## 终端快捷键
 
 Linux 终端中的快捷键主要由终端驱动和 Shell 处理。部分快捷键会向前台进程发送信号，部分则只是控制当前命令行输入。
 
-## 1. `Ctrl + C`：发送 `SIGINT`
+### `Ctrl + C`：发送 `SIGINT`
 
 ```text
 Ctrl + C
@@ -54,9 +52,7 @@ kill PID → SIGTERM (15)
 
 `SIGINT` 可以被程序捕获并处理，因此程序可以根据自己的逻辑决定如何响应。
 
----
-
-## 2. `Ctrl + Z`：发送 `SIGTSTP`
+### `Ctrl + Z`：发送 `SIGTSTP`
 
 ```text
 Ctrl + Z
@@ -105,9 +101,7 @@ Ctrl + C → 请求中断程序
 Ctrl + Z → 请求暂停程序
 ```
 
----
-
-## 3. `Ctrl + D`：输入 EOF
+### `Ctrl + D`：输入 EOF
 
 `Ctrl + D` 严格来说**不是信号**。
 
@@ -134,9 +128,7 @@ Ctrl + D → 输入 EOF
 exit      → 执行 Shell 内建命令退出
 ```
 
----
-
-## 4. `Ctrl + R`：搜索历史命令
+### `Ctrl + R`：搜索历史命令
 
 ```text
 Ctrl + R
@@ -160,9 +152,7 @@ Ctrl + R
 
 可以继续搜索更早的匹配项。
 
----
-
-## 5. `Ctrl + L`：清除终端显示
+### `Ctrl + L`：清除终端显示
 
 ```text
 Ctrl + L
@@ -178,23 +168,9 @@ clear
 
 类似的效果。
 
-它不会删除：
+它不会删除 Shell 历史记录。
 
-```text
-Shell 历史记录
-```
-
-也不会删除：
-
-```text
-终端程序已经产生的内容
-```
-
-只是让这些内容不再显示在当前可见区域。
-
----
-
-## 6. `Ctrl + A`：移动到命令行开头
+### `Ctrl + A`：移动到命令行开头
 
 ```text
 Ctrl + A
@@ -202,9 +178,7 @@ Ctrl + A
 
 将光标移动到当前命令行的开头。
 
----
-
-## 7. `Ctrl + E`：移动到命令行结尾
+### `Ctrl + E`：移动到命令行结尾
 
 ```text
 Ctrl + E
@@ -212,9 +186,7 @@ Ctrl + E
 
 将光标移动到当前命令行的结尾。
 
----
-
-## 8. `Ctrl + ← / →`：按单词移动光标
+### `Ctrl + ← / →`：按单词移动光标
 
 ```text
 Ctrl + ←
@@ -228,11 +200,9 @@ Ctrl + →
 
 光标向右移动一个单词。
 
-适合编辑较长的命令。
-
 ---
 
-# 二、目录与路径
+## 目录与路径
 
 Linux 文件系统以：
 
@@ -278,9 +248,7 @@ Linux 文件系统以：
 
 属于相对路径。
 
----
-
-## 1. `pwd`：查看当前目录
+### `pwd`：查看当前目录
 
 ```bash
 pwd
@@ -294,9 +262,7 @@ pwd
 /home/user
 ```
 
----
-
-## 2. `cd`：切换目录
+### `cd`：切换目录
 
 ```bash
 cd /var/log
@@ -322,9 +288,7 @@ cd -       # 上一次所在目录
 /    根目录
 ```
 
----
-
-## 3. `ls`：查看目录内容
+### `ls`：查看目录内容
 
 ```bash
 ls
@@ -356,13 +320,13 @@ ls -l
 ls -a
 ```
 
-同时以易读单位显示大小：
+以易读单位显示文件大小：
 
 ```bash
 ls -lh
 ```
 
-最常用组合：
+常用组合：
 
 ```bash
 ls -lah
@@ -370,9 +334,9 @@ ls -lah
 
 ---
 
-# 三、文件和目录操作
+## 文件和目录操作
 
-## 1. `mkdir`：创建目录
+### `mkdir`：创建目录
 
 ```bash
 mkdir test
@@ -388,9 +352,7 @@ mkdir -p /data/app/logs
 
 `-p` 会自动创建不存在的父目录。
 
----
-
-## 2. `rmdir`：删除空目录
+### `rmdir`：删除空目录
 
 ```bash
 rmdir test
@@ -400,30 +362,17 @@ rmdir test
 
 如果目录中还有文件，则不能使用 `rmdir` 删除。
 
----
-
-## 3. `touch`：创建文件或修改时间戳
+### `touch`：创建文件或修改时间戳
 
 ```bash
 touch test.txt
 ```
 
-如果文件不存在：
+如果文件不存在，则创建一个空文件。
 
-```text
-创建空文件
-```
+如果文件已经存在，则不会修改文件内容，只更新文件时间戳。
 
-如果文件已经存在：
-
-```text
-不修改文件内容
-只更新文件时间戳
-```
-
----
-
-## 4. `cp`：复制文件或目录
+### `cp`：复制文件或目录
 
 复制文件：
 
@@ -445,9 +394,7 @@ recursive
 递归复制
 ```
 
----
-
-## 5. `mv`：移动或重命名
+### `mv`：移动或重命名
 
 移动：
 
@@ -463,9 +410,7 @@ mv old.txt new.txt
 
 Linux 中没有独立的“重命名命令”，重命名实际上就是使用 `mv` 将文件移动到新的名称。
 
----
-
-## 6. `rm`：删除文件或目录
+### `rm`：删除文件或目录
 
 删除文件：
 
@@ -494,26 +439,17 @@ rm -rf test
 
 `rm -rf` 不会进入回收站，执行前必须确认目标路径。
 
----
+### `ln`：创建链接
 
-## 7. `ln`：创建链接
-
-### 硬链接
+硬链接：
 
 ```bash
 ln file.txt hard.txt
 ```
 
-创建硬链接后：
+创建硬链接后，两个目录项指向同一个 inode。
 
-```text
-file.txt
-hard.txt
-```
-
-这两个目录项指向同一个 inode。
-
-### 软链接
+软链接：
 
 ```bash
 ln -s /opt/app/app.jar app.jar
@@ -533,9 +469,9 @@ app.jar
 
 ---
 
-# 四、文件内容查看
+## 文件内容查看
 
-## 1. `cat`：输出文件内容
+### `cat`：输出文件内容
 
 ```bash
 cat app.conf
@@ -545,9 +481,7 @@ cat app.conf
 
 适合查看较小的文件。
 
----
-
-## 2. `less`：分页查看文件
+### `less`：分页查看文件
 
 ```bash
 less app.log
@@ -566,9 +500,7 @@ n           下一个匹配项
 q           退出
 ```
 
----
-
-## 3. `more`：分页查看
+### `more`：分页查看
 
 ```bash
 more app.log
@@ -578,9 +510,7 @@ more app.log
 
 实际排查日志时通常更常使用 `less`。
 
----
-
-## 4. `head`：查看文件开头
+### `head`：查看文件开头
 
 ```bash
 head app.log
@@ -594,9 +524,7 @@ head app.log
 head -n 20 app.log
 ```
 
----
-
-## 5. `tail`：查看文件结尾
+### `tail`：查看文件结尾
 
 ```bash
 tail app.log
@@ -622,9 +550,9 @@ tail -f app.log
 
 ---
 
-# 五、文件和文本搜索
+## 文件和文本搜索
 
-## 1. `find`：查找文件
+### `find`：查找文件
 
 按照名称：
 
@@ -653,9 +581,7 @@ find /var/log -type f -name "*.log"
 
 表示查找 `/var/log` 下所有扩展名为 `.log` 的普通文件。
 
----
-
-## 2. `grep`：搜索文本
+### `grep`：搜索文本
 
 ```bash
 grep "ERROR" app.log
@@ -687,9 +613,7 @@ grep -r "ERROR" /var/log
 grep -n "ERROR" app.log
 ```
 
----
-
-## 3. `wc`：统计文本
+### `wc`：统计文本
 
 ```bash
 wc app.log
@@ -724,9 +648,9 @@ wc -c app.log
 
 ---
 
-# 六、命令和系统信息查询
+## 命令和系统信息查询
 
-## 1. `which`：查找命令路径
+### `which`：查找命令路径
 
 ```bash
 which java
@@ -746,9 +670,7 @@ which java
 当前 Shell 执行这个命令时，找到的是哪个可执行文件？
 ```
 
----
-
-## 2. `history`：查看历史命令
+### `history`：查看历史命令
 
 ```bash
 history
@@ -770,9 +692,7 @@ history
 !102
 ```
 
----
-
-## 3. `getent`：查询系统名称服务数据库
+### `getent`：查询系统名称服务数据库
 
 例如：
 
@@ -790,9 +710,7 @@ getent group wheel
 
 `getent` 通过系统的 NSS（Name Service Switch）机制查询信息，因此数据来源不一定只有 `/etc/passwd` 或 `/etc/group`。
 
----
-
-## 4. `hostnamectl`：查看主机信息
+### `hostnamectl`：查看主机信息
 
 ```bash
 hostnamectl
@@ -815,9 +733,29 @@ hostnamectl set-hostname server01
 
 ---
 
-# 七、环境变量
+## 环境变量
 
-## `export`：设置环境变量
+### `echo`：输出内容
+
+```bash
+echo "Hello Linux"
+```
+
+查看变量：
+
+```bash
+echo $PATH
+```
+
+`echo` 本身只是输出参数内容，Shell 会先展开：
+
+```text
+$PATH
+```
+
+然后再把结果交给 `echo` 输出。
+
+### `export`：设置环境变量
 
 ```bash
 export JAVA_HOME=/opt/java
@@ -846,29 +784,7 @@ export PATH=$PATH:/opt/java/bin
 
 ---
 
-## `echo`：输出内容
-
-```bash
-echo "Hello Linux"
-```
-
-查看变量：
-
-```bash
-echo $PATH
-```
-
-`echo` 本身只是输出参数内容，并不负责查询变量；Shell 会先展开：
-
-```text
-$PATH
-```
-
-然后再把结果交给 `echo` 输出。
-
----
-
-# 八、用户与用户组
+## 用户与用户组
 
 Linux 用户和用户组是权限系统的重要组成部分。
 
@@ -879,9 +795,7 @@ Linux 用户和用户组是权限系统的重要组成部分。
 所属组 Group
 ```
 
----
-
-## 1. `id`：查看用户身份
+### `id`：查看用户身份
 
 ```bash
 id
@@ -911,9 +825,7 @@ GID      主组 ID
 groups   所属用户组
 ```
 
----
-
-## 2. `useradd`：创建用户
+### `useradd`：创建用户
 
 ```bash
 useradd user1
@@ -935,9 +847,7 @@ passwd user1
 
 为用户设置密码。
 
----
-
-## 3. `userdel`：删除用户
+### `userdel`：删除用户
 
 ```bash
 userdel user1
@@ -951,9 +861,7 @@ userdel user1
 userdel -r user1
 ```
 
----
-
-## 4. `usermod`：修改用户
+### `usermod`：修改用户
 
 例如把用户添加到 `wheel` 组：
 
@@ -970,17 +878,13 @@ usermod -aG wheel user1
 
 使用 `-G` 添加组时通常应该同时使用 `-a`，否则可能覆盖用户原有的附加组。
 
----
-
-## 5. `groupadd`：创建用户组
+### `groupadd`：创建用户组
 
 ```bash
 groupadd developers
 ```
 
----
-
-## 6. `groupdel`：删除用户组
+### `groupdel`：删除用户组
 
 ```bash
 groupdel developers
@@ -988,7 +892,7 @@ groupdel developers
 
 ---
 
-# 九、文件权限
+## 文件权限
 
 Linux 权限主要针对：
 
@@ -1026,9 +930,7 @@ rwx | r-x | r--
 User   Group   Other
 ```
 
----
-
-## `chmod`：修改权限
+### `chmod`：修改权限
 
 例如：
 
@@ -1068,9 +970,7 @@ chmod u+x script.sh
 
 表示给文件所有者增加执行权限。
 
----
-
-## `chown`：修改所有者
+### `chown`：修改所有者
 
 ```bash
 chown user1 app.log
@@ -1088,9 +988,7 @@ chown user1:developers app.log
 chown -R user1:developers /opt/app
 ```
 
----
-
-## `chgrp`：修改所属组
+### `chgrp`：修改所属组
 
 ```bash
 chgrp developers app.log
@@ -1100,9 +998,9 @@ chgrp developers app.log
 
 ---
 
-# 十、用户切换与权限提升
+## 用户切换与权限提升
 
-## 1. `su`：切换用户
+### `su`：切换用户
 
 ```bash
 su user1
@@ -1118,17 +1016,13 @@ su -
 
 切换到 root，并创建一个登录 Shell 环境。
 
-：
-
 ```bash
 su - user1
 ```
 
 以 `user1` 的登录环境进入 Shell。
 
----
-
-## 2. `sudo`：以其他用户身份执行命令
+### `sudo`：以其他用户身份执行命令
 
 例如：
 
@@ -1150,9 +1044,9 @@ sudo
 
 ---
 
-# 十一、进程管理
+## 进程管理
 
-## 1. `ps`：查看进程
+### `ps`：查看进程
 
 查看当前 Shell 相关进程：
 
@@ -1190,9 +1084,7 @@ PPID → 父进程 ID
 UID  → 进程所属用户
 ```
 
----
-
-## 2. `top`：实时查看进程
+### `top`：实时查看进程
 
 ```bash
 top
@@ -1214,9 +1106,7 @@ CPU 使用情况
 q
 ```
 
----
-
-## 3. `kill`：向进程发送信号
+### `kill`：向进程发送信号
 
 ```bash
 kill 1234
@@ -1272,9 +1162,9 @@ SIGTERM
 
 ---
 
-# 十二、磁盘空间
+## 磁盘空间
 
-## 1. `df`：查看文件系统空间
+### `df`：查看文件系统空间
 
 ```bash
 df -h
@@ -1295,9 +1185,7 @@ Use%   使用率
 这个文件系统还剩多少空间？
 ```
 
----
-
-## 2. `du`：查看文件或目录占用空间
+### `du`：查看文件或目录占用空间
 
 ```bash
 du -sh /var/log
@@ -1328,9 +1216,9 @@ du
 
 ---
 
-# 十三、基础网络操作
+## 基础网络操作
 
-## 1. `ping`：测试 ICMP 连通性
+### `ping`：测试 ICMP 连通性
 
 ```bash
 ping 127.0.0.1
@@ -1360,11 +1248,7 @@ ping 成功
 
 因为 `ping` 使用的是 ICMP。
 
----
-
-# 十四、远程文件复制
-
-## `scp`：通过 SSH 复制文件
+### `scp`：通过 SSH 复制文件
 
 上传：
 
@@ -1394,9 +1278,9 @@ scp 源 用户@主机:目标路径
 
 ---
 
-# 十五、Shell 后台运行
+## Shell 后台运行
 
-## `nohup`：忽略挂断信号
+### `nohup`：忽略 `SIGHUP`
 
 例如：
 
@@ -1442,11 +1326,11 @@ nohup ≠ 后台运行
 
 ---
 
-# 十六、软件包管理
+## 软件包管理
 
 CentOS 不同版本的包管理方式存在区别。
 
-## CentOS 7
+### CentOS 7：YUM
 
 CentOS 7 使用传统的：
 
@@ -1463,11 +1347,9 @@ yum search nginx
 yum update
 ```
 
----
+### CentOS 8+：DNF
 
-## CentOS 8+
-
-从 CentOS 8 开始，系统软件包管理技术切换到了 **DNF**。
+从 **CentOS 8** 开始，系统软件包管理技术切换到了 **DNF**。
 
 例如：
 
@@ -1497,11 +1379,9 @@ CentOS 8+
 → yum 作为兼容入口
 ```
 
-CentOS Stream 也属于 DNF 体系。
-
 ---
 
-# 十七、systemd 服务管理
+## systemd 服务管理
 
 CentOS 使用 `systemd` 管理系统服务。
 
@@ -1517,25 +1397,19 @@ systemctl
 myapp
 ```
 
----
-
-## 1. 启动服务
+### 启动服务
 
 ```bash
 systemctl start myapp
 ```
 
----
-
-## 2. 停止服务
+### 停止服务
 
 ```bash
 systemctl stop myapp
 ```
 
----
-
-## 3. 重启服务
+### 重启服务
 
 ```bash
 systemctl restart myapp
@@ -1549,9 +1423,7 @@ systemctl restart myapp
 重新启动服务
 ```
 
----
-
-## 4. 重新加载配置
+### 重新加载配置
 
 ```bash
 systemctl reload myapp
@@ -1561,11 +1433,7 @@ systemctl reload myapp
 
 前提是该服务本身支持 `reload`。
 
-`reload` 通常不需要重新创建服务进程。
-
----
-
-## 5. 重新加载，否则重启
+### 重新加载，否则重启
 
 ```bash
 systemctl reload-or-restart myapp
@@ -1581,9 +1449,7 @@ systemctl reload-or-restart myapp
 → restart
 ```
 
----
-
-## 6. 查看服务状态
+### 查看服务状态
 
 ```bash
 systemctl status myapp
@@ -1599,9 +1465,7 @@ systemctl status myapp
 最近日志
 ```
 
----
-
-## 7. 设置开机启动
+### 设置开机启动
 
 ```bash
 systemctl enable myapp
@@ -1623,9 +1487,9 @@ systemctl enable --now myapp
 
 ---
 
-# 十八、服务日志
+## 服务日志
 
-## 1. `journalctl -u`：查看服务日志
+### `journalctl -u`：查看服务日志
 
 ```bash
 journalctl -u myapp
@@ -1633,9 +1497,7 @@ journalctl -u myapp
 
 `-u` 表示按照 systemd unit 过滤日志。
 
----
-
-## 2. 实时查看日志
+### 实时查看日志
 
 ```bash
 journalctl -u myapp -f
@@ -1643,17 +1505,13 @@ journalctl -u myapp -f
 
 `-f` 表示持续跟踪新产生的日志。
 
----
-
-## 3. 查看今天的日志
+### 查看今天的日志
 
 ```bash
 journalctl -u myapp --since today
 ```
 
----
-
-## 4. 查看最近日志
+### 查看最近日志
 
 ```bash
 journalctl -u myapp -n 100
@@ -1663,27 +1521,23 @@ journalctl -u myapp -n 100
 
 ---
 
-# 十九、定时任务
+## 定时任务
 
 Linux 可以通过 `cron` 执行周期性任务。
 
-## 1. 编辑当前用户的定时任务
+### 编辑当前用户的定时任务
 
 ```bash
 crontab -e
 ```
 
----
-
-## 2. 查看定时任务
+### 查看定时任务
 
 ```bash
 crontab -l
 ```
 
----
-
-## 3. 删除定时任务
+### 删除定时任务
 
 ```bash
 crontab -r
@@ -1697,9 +1551,7 @@ crontab -r
 
 会删除当前用户的整个 crontab，而不是只删除某一条任务。
 
----
-
-## 4. Cron 表达式
+### Cron 表达式
 
 基本格式：
 
@@ -1733,9 +1585,9 @@ crontab -r
 
 ---
 
-# 二十、系统时间
+## 系统时间
 
-## 1. `date`：查看系统时间
+### `date`：查看系统时间
 
 ```bash
 date
@@ -1743,9 +1595,7 @@ date
 
 显示当前系统时间。
 
----
-
-## 2. `timedatectl`：查看系统时间状态
+### `timedatectl`：查看系统时间状态
 
 ```bash
 timedatectl
@@ -1770,9 +1620,7 @@ System clock synchronized
 
 可以用来判断系统时钟是否已经同步。
 
----
-
-## 3. 设置系统时区
+### 设置系统时区
 
 例如：
 
@@ -1794,9 +1642,7 @@ timedatectl set-timezone Asia/Tokyo
 
 而不是简单地把 UTC 时间“改掉”。
 
----
-
-## 4. `chronyc sources`：查看时间源
+### `chronyc sources`：查看时间源
 
 ```bash
 chronyc sources
@@ -1804,9 +1650,7 @@ chronyc sources
 
 用于查看当前 chrony 配置的时间源以及时间源状态。
 
----
-
-## 5. `chronyc tracking`：查看同步状态
+### `chronyc tracking`：查看同步状态
 
 ```bash
 chronyc tracking
@@ -1827,43 +1671,33 @@ Stratum
 
 ---
 
-# 二十一、常用命令组合
+## 常用命令组合
 
-Linux 运维中经常需要把多个基础命令组合起来。
-
-## 查找 Java 进程
+### 查找 Java 进程
 
 ```bash
 ps -ef | grep java
 ```
 
----
-
-## 搜索日志错误
+### 搜索日志错误
 
 ```bash
 grep -n "ERROR" app.log
 ```
 
----
-
-## 实时查看错误日志
+### 实时查看错误日志
 
 ```bash
 tail -f app.log | grep ERROR
 ```
 
----
-
-## 查找指定文件
+### 查找指定文件
 
 ```bash
 find /opt -name "app.jar"
 ```
 
----
-
-## 排查磁盘空间
+### 排查磁盘空间
 
 先看文件系统：
 
@@ -1877,9 +1711,7 @@ df -h
 du -sh /var/*
 ```
 
----
-
-## 排查服务
+### 排查服务
 
 先看服务状态：
 
@@ -1893,11 +1725,9 @@ systemctl status myapp
 journalctl -u myapp -n 100
 ```
 
-最后检查服务是否正常响应。
-
 ---
 
-# 二十二、基础命令速查
+## 基础命令速查
 
 | 分类  | 命令            | 作用               |
 | --- | ------------- | ---------------- |
@@ -1915,7 +1745,7 @@ journalctl -u myapp -n 100
 | 查看  | `less`        | 分页查看             |
 | 查看  | `more`        | 分页查看             |
 | 查看  | `head`        | 查看文件开头           |
-| 查看  | `tail`        | 查看文件末尾 / 跟踪日志    |
+| 查看  | `tail`        | 查看文件结尾 / 跟踪日志    |
 | 搜索  | `find`        | 查找文件             |
 | 搜索  | `grep`        | 搜索文本             |
 | 统计  | `wc`          | 统计行数、单词数、字节数     |
@@ -1955,130 +1785,91 @@ journalctl -u myapp -n 100
 
 ---
 
-# 二十三、基础操作中的几个核心概念
+## 基础操作中的几个核心概念
 
-## 前台与后台
+### `Ctrl + C`、`Ctrl + Z`、`Ctrl + D`
 
 ```text
-前台程序
-→ 占用当前终端
-→ Ctrl + C / Ctrl + Z 可以操作
+Ctrl + C
+    → SIGINT (2)
+    → 请求中断前台进程
 
-后台程序
-→ 不占用当前终端输入
-→ 可以继续执行其他命令
+Ctrl + Z
+    → SIGTSTP
+    → 请求暂停前台进程
+
+Ctrl + D
+    → EOF
+    → 结束当前输入
+    → 在 Shell 中通常导致 Shell 退出
 ```
 
----
+### `kill` 不是“强制杀进程”
 
-## 进程与信号
-
-```text
+```bash
 kill PID
 ```
 
-并不是单纯地“杀进程”，而是：
+默认发送：
 
 ```text
-向 PID 对应的进程发送信号
+SIGTERM (15)
 ```
 
-常见信号：
+而：
+
+```bash
+kill -9 PID
+```
+
+发送：
 
 ```text
-SIGINT   2
-SIGTERM 15
-SIGKILL  9
-SIGTSTP
+SIGKILL (9)
 ```
 
----
+通常应该优先使用 `SIGTERM`，给程序一个正常清理和退出的机会。
 
-## 文件系统空间与目录空间
+### `df` 和 `du`
 
 ```text
 df
-→ 文件系统整体空间
+→ 查看文件系统整体空间
 
 du
-→ 文件 / 目录占用空间
+→ 查看具体文件 / 目录占用空间
 ```
 
----
-
-## 服务管理与日志
+### `systemctl restart` 和 `reload`
 
 ```text
-systemctl
-→ 服务本身
+restart
+→ 重启服务
 
-journalctl
-→ 服务产生的日志
+reload
+→ 请求服务重新加载配置
+→ 通常不重新创建服务进程
 ```
 
-一个典型的排查流程：
+### `yum` 和 `dnf`
 
 ```text
-systemctl status
-        ↓
-journalctl -u
-        ↓
-检查进程
-        ↓
-检查端口
-        ↓
-测试服务
+CentOS 7
+→ YUM 3
+
+CentOS 8+
+→ DNF
+→ yum 作为兼容入口
 ```
 
----
-
-## 时间与时间同步
+### `nohup` 和 `&`
 
 ```text
-date
-→ 当前时间
+nohup
+→ 忽略 SIGHUP
 
-timedatectl
-→ 时间、时区、同步状态
-
-chronyc
-→ chrony 时间同步详情
+&
+→ 后台执行
 ```
 
----
-
-# 二十四、学习目标
-
-Linux 基础操作最终应该达到的不是“记住几十个命令”，而是能够独立完成下面这些操作：
-
-```text
-登录服务器
-    ↓
-确认当前用户和目录
-    ↓
-浏览文件系统
-    ↓
-创建 / 移动 / 删除文件
-    ↓
-查看和搜索文件内容
-    ↓
-理解文件权限
-    ↓
-创建和管理用户
-    ↓
-查看和控制进程
-    ↓
-判断磁盘空间是否充足
-    ↓
-检查基础网络连通性
-    ↓
-管理 systemd 服务
-    ↓
-查看服务日志
-    ↓
-配置定时任务
-    ↓
-检查系统时间和时间同步状态
-```
-
-这些内容构成了 Linux 服务器日常操作的基础。
+两者解决的问题不同。
