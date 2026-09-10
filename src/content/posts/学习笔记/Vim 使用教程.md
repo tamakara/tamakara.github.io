@@ -7,51 +7,61 @@ category: 学习笔记
 ---
 > 本文介绍 Linux 中常用的文本编辑器 **Vim**，以服务器上的配置文件、日志和代码编辑为主要使用场景。
 >
-> Vim 是 **Vi 的增强版**。`vi` 最早来源于 Unix，Vim（Vi IMproved）在兼容 Vi 基本操作的基础上增加了大量功能，因此许多 Linux 系统中输入 `vi` 时，实际启动的也可能是 Vim 或其兼容版本。本文以现代 Vim 的常用操作为主。
+> Vim 是 **Vi 的增强版**。`vi` 是 Unix 早期的经典文本编辑器，而 Vim（Vi IMproved）在兼容 Vi 基本操作的基础上增加了大量功能。Vim 官方文档也专门提供了 [Vi 与 Vim 的差异说明](https://vimhelp.org/vi_diff.txt.html)。
 
 ## Vim 的基本模式
 
-Vim 与普通文本编辑器最大的区别之一，是**同一个键在不同模式下具有完全不同的含义**。
+Vim 与普通文本编辑器最大的区别之一，是**同一个按键在不同模式下具有不同含义**。
 
-常用模式：
+常用模式包括：
 
-```text
+```text id="4y5f0x"
 Normal Mode（正常模式）
-    ↓
 Insert Mode（插入模式）
-
-Normal Mode
-    ↓
 Visual Mode（可视模式）
-
-Normal Mode
-    ↓
 Command-line Mode（命令行模式）
 ```
 
-其中：
+可以简单理解为：
 
-```text
+```text id="2ldm77"
 Normal
-→ 移动光标、删除、复制、粘贴、执行命令
+→ 移动、删除、复制、粘贴、执行操作
 
 Insert
-→ 输入文本
+→ 输入文字
 
 Visual
-→ 选择文本
+→ 选择文字
 
 Command-line
-→ 执行保存、退出、替换、搜索等命令
+→ 保存、退出、替换以及执行 Ex 命令
 ```
 
-Vim 启动后默认处于 **Normal Mode**。
+Vim 启动后默认进入 **Normal Mode**。
 
-从其他模式返回 Normal Mode，最常用的方法是：
+从其他模式返回 Normal Mode，通常使用：
 
-```text
+```text id="w7j1x3"
 Esc
 ```
+
+Vim 官方帮助可以在 Vim 内直接通过：
+
+```text id="6ao8hv"
+:help
+```
+
+打开，也可以使用：
+
+```text id="ne6o3o"
+:help insert.txt
+:help change.txt
+:help visual.txt
+:help editing.txt
+```
+
+分别查看插入、文本修改、Visual Mode、文件编辑等相关文档。
 
 ---
 
@@ -59,25 +69,37 @@ Esc
 
 使用 Vim 打开文件：
 
-```bash
+```bash id="xq0c0t"
 vim app.conf
 ```
 
-如果文件不存在，Vim 会创建一个新的编辑缓冲区，保存时才会真正写入文件。
+Vim 会将文件内容读入编辑缓冲区。
 
-也可以直接：
+编辑过程中修改的是：
 
-```bash
-vim
+```text id="i6f4e7"
+Vim 缓冲区
 ```
 
-不指定文件进入 Vim。
+执行保存后，修改内容才会写入磁盘文件。
 
-退出 Vim：
+因此可以理解为：
 
-```text
-:q
+```text id="4rrp2o"
+文件
+ ↓
+读取
+ ↓
+Vim Buffer
+ ↓
+编辑
+ ↓
+:w
+ ↓
+写回文件
 ```
+
+Vim 官方文档对这一过程有明确说明：编辑文件本质上是“读取文件到 buffer → 修改 buffer → 将 buffer 写回文件”。
 
 ---
 
@@ -85,161 +107,97 @@ vim
 
 Normal Mode 是 Vim 最核心的模式。
 
-在这个模式中输入普通字母通常不是为了输入文本，而是执行编辑和移动操作。
+这个模式下，普通字母通常不是用于输入文字，而是执行移动、删除、复制等操作。
 
 ### `i`：在光标前进入插入模式
 
-```text
+```text id="qj8hsr"
 i
 ```
 
-在当前光标位置**之前**进入 Insert Mode。
+在当前光标位置之前进入 Insert Mode。
 
-例如光标位于：
-
-```text
-abc|def
-```
-
-按：
-
-```text
-i
-```
-
-后输入：
-
-```text
-XYZ
-```
-
-得到：
-
-```text
-abcXYZ|def
-```
+Vim 官方文档：[Insert mode commands](https://vimhelp.org/insert.txt.html) 对 `i`、`a`、`I`、`A`、`o`、`O` 的行为都有明确说明。
 
 ---
 
-### `I`：移动到行首的第一个非空白字符并插入
+### `I`：在第一个非空白字符前插入
 
-```text
+```text id="8sq1c5"
 I
 ```
 
-`I` 会将光标移动到**当前行第一个非空白字符的位置**，然后进入 Insert Mode。
+将光标移动到当前行的**第一个非空白字符**处，然后进入 Insert Mode。
 
 例如：
 
-```text
+```text id="1vl6ak"
     hello world
 ```
 
-光标无论原来位于这一行什么位置，执行：
+执行：
 
-```text
+```text id="ymn4qy"
 I
 ```
 
-后，插入位置位于：
+插入位置为：
 
-```text
+```text id="w7q9qb"
     |hello world
 ```
 
-因此：
+因此不要简单记成：
 
-```text
-I
-→ 当前行第一个非空白字符处进入插入模式
+```text id="9qys9q"
+I → 行首
 ```
 
-它与：
+更准确的是：
 
-```text
-0i
+```text id="6npn7f"
+I → 当前行第一个非空白字符处
 ```
-
-并不完全相同。
-
-`0` 会移动到行的最开头，包括缩进产生的空格。
 
 ---
 
 ### `a`：在光标后进入插入模式
 
-```text
+```text id="9i8o5u"
 a
 ```
 
-在当前光标位置**之后**进入 Insert Mode。
-
-例如：
-
-```text
-abc|def
-```
-
-按：
-
-```text
-a
-```
-
-后，输入内容会插入到当前字符之后。
+在当前光标位置之后进入 Insert Mode。
 
 ---
 
-### `A`：移动到行尾并插入
+### `A`：移动到行尾并进入插入模式
 
-```text
+```text id="b7v0c4"
 A
 ```
 
 移动到当前行末尾，然后进入 Insert Mode。
 
-常用于在一行末尾继续添加内容。
-
 ---
 
 ### `o`：在下一行创建新行
 
-```text
+```text id="0h7k2w"
 o
 ```
 
-在当前行的**下一行**创建一个新行，并进入 Insert Mode。
-
-例如：
-
-```text
-hello
-world
-```
-
-当前光标位于 `hello` 行时执行：
-
-```text
-o
-```
-
-会变成：
-
-```text
-hello
-|
-world
-```
+在当前行下方创建新行，并进入 Insert Mode。
 
 ---
 
 ### `O`：在上一行创建新行
 
-```text
+```text id="kspq3h"
 O
 ```
 
-在当前行的**上一行**创建一个新行，并进入 Insert Mode。
+在当前行上方创建新行，并进入 Insert Mode。
 
 ---
 
@@ -247,27 +205,35 @@ O
 
 ### `gg`：移动到第一行
 
-```text
+```text id="7v0y9u"
 gg
 ```
 
 将光标移动到文件第一行。
 
----
-
 ### `G`：移动到最后一行
 
-```text
+```text id="0ulc7d"
 G
 ```
 
-将光标移动到文件最后一行。
+默认将光标移动到最后一行。
+
+也可以指定行号：
+
+```text id="2yrjkp"
+10G
+```
+
+表示跳转到第 10 行。
+
+Vim 官方的快速参考中对 `gg` 和 `G` 都有明确说明。
 
 ---
 
 ### `w`：移动到下一个单词
 
-```text
+```text id="2fs1c5"
 w
 ```
 
@@ -275,23 +241,25 @@ w
 
 ---
 
-### `e`：移动到当前/下一个单词的结尾
+### `e`：移动到单词结尾
 
-```text
+```text id="qvkl32"
 e
 ```
 
-向前移动到一个 word 的结尾。
+向前移动到当前或下一个 word 的结尾。
 
 ---
 
-### `b`：移动到上一个单词的开头
+### `b`：移动到上一个单词开头
 
-```text
+```text id="3q7n8e"
 b
 ```
 
 向后移动到前一个 word 的开头。
+
+需要注意，Vim 中的 `word` 有明确的边界定义，并不简单等同于“自然语言中的一个单词”。官方快速参考也将 `w`、`e`、`b` 归类为 **text object motions**。
 
 ---
 
@@ -299,72 +267,45 @@ b
 
 ### `yy`：复制当前行
 
-```text
+```text id="b8c7l5"
 yy
 ```
 
 复制当前光标所在的整行。
 
-例如：
+`yy` 是一种典型的“操作符/动作”组合，可以理解为：
 
-```text
-hello
-world
+```text id="v6khts"
+y
++
+y
 ```
 
-光标位于 `hello` 行执行：
-
-```text
-yy
-```
-
-会将这一整行复制到 Vim 的寄存器中。
+其中 `y` 表示 yank（复制）。
 
 ---
 
-### `p`：在光标后粘贴
+### `p`：粘贴
 
-```text
+```text id="zq8p7l"
 p
 ```
 
-将最近一次复制或删除的内容放到当前光标之后。
+将最近一次复制或删除的内容放置到当前光标之后。
 
-对于使用 `yy` 复制的整行内容，`p` 会将内容粘贴到**当前行的下一行**。
-
-例如：
-
-```text
-hello
-world
-```
-
-光标位于 `hello` 行：
-
-```text
-yy
-p
-```
-
-结果：
-
-```text
-hello
-hello
-world
-```
+如果寄存器中的内容是通过 `yy` 复制的一整行，那么 `p` 会将这一行粘贴到**当前行之后**。
 
 ---
 
 ### `P`：在光标前粘贴
 
-```text
+```text id="w5j9xe"
 P
 ```
 
-与 `p` 相反，将内容粘贴到当前光标之前。
+与 `p` 相反，在当前光标之前进行粘贴。
 
-对于整行内容，通常表现为粘贴到当前行的上一行。
+对于整行文本，通常表现为粘贴到当前行之前。
 
 ---
 
@@ -372,142 +313,120 @@ P
 
 例如：
 
-```text
+```text id="y5c4fm"
 3p
 ```
 
-表示执行 3 次 `p` 操作。
+表示重复执行 `p` 三次。
 
-注意，`3p` 的含义是**重复 put 操作三次**，不能简单理解成“粘贴三行”。最终插入多少行还取决于寄存器中保存的内容。
+不能简单理解成“固定粘贴三行”，实际结果取决于寄存器中保存的是字符、单词还是整行内容。
 
 ---
 
-## 删除
+## 删除与修改
 
 ### `dd`：删除当前行
 
-```text
+```text id="l6d1s8"
 dd
 ```
 
 删除当前光标所在的整行。
 
-被 `dd` 删除的内容也会进入 Vim 的寄存器，因此之后可以使用：
+被删除的内容也会进入寄存器，因此可以使用：
 
-```text
+```text id="f4o6zq"
 p
-```
-
-或：
-
-```text
-P
 ```
 
 重新粘贴。
 
 ---
 
-### `dw`：删除一个 word
+### `dw`：删除一个移动范围
 
-```text
+```text id="v4m0s6"
 dw
 ```
 
-从当前光标位置开始，执行一次 `d` 操作，并使用 `w` 作为移动范围。
-
 可以理解为：
 
-```text
+```text id="j29bl5"
 d + w
-→ 删除光标到下一个 word 边界之间的文本
 ```
 
-实际删除范围与光标所在位置、单词边界有关，因此不要简单理解成“无论光标在哪里都删除整个单词”。
+其中：
+
+```text id="f9x8r6"
+d → delete
+w → 移动到下一个 word
+```
+
+Vim 中很多编辑操作都采用这种：
+
+```text id="7hmx0d"
+操作符 + Motion
+```
+
+的组合方式。
 
 ---
 
 ### `cw`：修改一个 word
 
-```text
+```text id="jxj42m"
 cw
 ```
 
-执行：
+可以理解为：
 
-```text
+```text id="9qvhmr"
 c + w
 ```
 
 其中：
 
-```text
-c = change
-w = word movement
+```text id="qz78b5"
+c → change
+w → word movement
 ```
 
-它会删除指定范围的文本，并立即进入 Insert Mode。
+执行后会删除对应范围，并进入 Insert Mode。
 
-因此：
-
-```text
-cw
-```
-
-非常适合“删除当前内容并马上重新输入”。
-
-例如：
-
-```text
-hello world
-```
-
-光标位于 `hello` 开头时执行：
-
-```text
-cw
-```
-
-输入：
-
-```text
-Linux
-```
-
-即可把原来的内容修改掉。
+一个容易踩坑的地方是：Vim 中 `cw` 的行为与单纯理解“`c` + `w`”并不完全一致。官方文档明确指出，`cw` 实际上按 `ce` 的方式工作，这是 Vi 历史遗留下来的特殊行为。
 
 ---
 
-### `ci(`：修改括号内的内容
+### `ci(`：修改括号内部内容
 
-```text
+```text id="7g2qj4"
 ci(
 ```
 
-其中：
+这里：
 
-```text
+```text id="fqhqj7"
 c  → change
 i( → inside parentheses
 ```
 
-表示修改当前括号内部的文本。
+表示修改当前括号内部的内容。
 
 例如：
 
-```text
+```text id="m4k2mx"
 hello(world)
 ```
 
-光标位于括号内部时：
+光标位于括号内部时执行：
 
-```text
+```text id="b9x1ot"
 ci(
 ```
 
 会删除：
 
-```text
+```text id="xw1fck"
 world
 ```
 
@@ -515,7 +434,7 @@ world
 
 类似操作：
 
-```text
+```text id="sosx8b"
 ci(
 ci[
 ci{
@@ -523,15 +442,15 @@ ci"
 ci'
 ```
 
-分别可以用于修改不同成对符号内部的内容。
+可分别作用于不同类型的成对符号。
 
-例如：
+Vim 官方文档中将这种 `i` / `a` 与成对结构结合的操作归类为 **text objects**。可以在 Vim 中通过：
 
-```text
-ci{
+```text id="ny0nq8"
+:help text-objects
 ```
 
-表示修改 `{}` 内部的内容。
+查看完整说明。
 
 ---
 
@@ -539,144 +458,136 @@ ci{
 
 ### `u`：撤销
 
-```text
+```text id="ebl85m"
 u
 ```
 
-撤销上一次修改操作。
+撤销最近一次修改。
 
-例如：
+可以连续执行：
 
-```text
-输入内容
-↓
+```text id="ju6ypv"
 u
-↓
-撤销这次修改
+u
+u
 ```
 
-可以连续按 `u` 撤销多次修改。
+进行多次撤销。
 
 ---
 
 ### `Ctrl + R`：重做
 
-```text
+```text id="o5b6cg"
 Ctrl + R
 ```
 
-恢复之前被 `u` 撤销的修改。
+恢复之前通过 `u` 撤销的修改。
 
-可以简单理解为：
+因此：
 
-```text
+```text id="x3sn3a"
 u
-→ undo，撤销
+→ undo
 
 Ctrl + R
-→ redo，重做
+→ redo
 ```
+
+Vim 官方将这些操作统一归在 [Undo and Redo](https://vimhelp.org/undo.txt.html) 文档中。
 
 ---
 
 ### `.`：重复上一次修改
 
-```text
+```text id="0x8vul"
 .
 ```
 
-重复最近一次可以重复执行的修改操作。
+重复最近一次**可重复的编辑操作**。
 
 例如：
 
-```text
+```text id="c8w1vw"
 dw
 ```
 
-删除一个 word 后，再移动到其他位置：
+删除一个范围后：
 
-```text
+```text id="1sgn4p"
 .
 ```
 
-可以再次执行相同的删除操作。
+可以在另一个位置再次执行相同的修改。
 
-`.` 是 Vim 中非常重要的效率操作，尤其适合对多个位置执行相同修改。
+`.` 是 Vim 非常重要的效率特性。官方文档将其归类为 **repeating commands**。
 
 ---
 
-## 可视模式
+## 可视模式（Visual Mode）
+
+Visual Mode 用于选择文本，然后对选中的区域执行删除、复制、修改等操作。
+
+Vim 官方文档对 Visual Mode 有非常完整的说明：[Visual mode](https://vimhelp.org/visual.txt.html)。
 
 ### `v`：字符可视模式
 
-```text
+```text id="4k8l7u"
 v
 ```
 
-进入 Visual Mode，并以**字符**为单位选择文本。
+进入 Characterwise Visual Mode，以字符为单位选择文本。
 
-然后可以使用：
-
-```text
-h
-j
-k
-l
-```
-
-或方向键移动光标扩大选择范围。
-
-例如选中后：
-
-```text
-d
-```
-
-可以删除选中的内容。
-
----
-
-### `Shift + V`：行可视模式
-
-```text
-V
-```
-
-进入 **Visual Line Mode**，以整行为单位选择。
+然后移动光标即可扩大选区。
 
 例如：
 
-```text
+```text id="k3t2b1"
+v
+llll
+```
+
+选择对应范围后，可以执行：
+
+```text id="p7os6b"
+d
+```
+
+删除选中内容。
+
+---
+
+### `V`：行可视模式
+
+```text id="0h3p1a"
+V
+```
+
+进入 Linewise Visual Mode，以整行为单位选择。
+
+例如：
+
+```text id="p9e1v1"
 V
 j
 j
 ```
 
-表示选择当前行以及下面两行。
-
-选择完成后可以：
-
-```text
-d
-```
-
-删除所选行。
+可以选择当前行以及下面两行。
 
 ---
 
 ### `Ctrl + V`：块可视模式
 
-```text
+```text id="5w3g6v"
 Ctrl + V
 ```
 
-进入 **Visual Block Mode**。
-
-与普通 Visual Mode 不同，它可以按照矩形区域进行选择。
+进入 Blockwise Visual Mode，以**矩形区域**进行选择。
 
 例如：
 
-```text
+```text id="25gk54"
 aaa 111
 bbb 222
 ccc 333
@@ -684,55 +595,55 @@ ccc 333
 
 可以选择：
 
-```text
+```text id="3u8kqx"
 111
 222
 333
 ```
 
-对应的矩形区域。
+所在的矩形区域。
 
-这种模式非常适合：
+块可视模式非常适合：
 
-```text
+```text id="r42k0c"
 批量编辑列
-批量删除相同位置字符
-批量添加文本
+批量删除某一列
+批量插入文本
 ```
+
+Vim 官方文档明确将 `v`、`V`、`Ctrl-V` 分别定义为字符、行、块三种 Visual Mode。
+
+> 在 Windows 某些终端环境中，`Ctrl + V` 可能被终端或其他程序映射为粘贴操作，此时可能需要使用 Vim 文档中介绍的替代方式。
 
 ---
 
-### `d`：删除选中内容
+### `d`：删除选中的内容
 
 在 Visual Mode 中：
 
-```text
+```text id="3pmppn"
 d
 ```
 
-删除当前选中的文本。
+删除当前选区。
 
-例如：
+同样可以使用：
 
-```text
-v
+```text id="xc5pj5"
+y
 ```
 
-选择文本后：
-
-```text
-d
-```
-
-即可删除选择内容。
+复制选区。
 
 ---
 
 ## 插入模式（Insert Mode）
 
-进入方式：
+Insert Mode 用于直接输入文本。
 
-```text
+常见进入方式：
+
+```text id="9h7n99"
 i
 a
 I
@@ -741,38 +652,26 @@ o
 O
 ```
 
-进入 Insert Mode 后，就可以像普通文本编辑器一样输入文字。
+进入后即可直接输入文本。
 
-例如：
+退出：
 
-```text
-i
-```
-
-进入后输入：
-
-```text
-Hello Linux
-```
-
-即可正常编辑文本。
-
-退出 Insert Mode：
-
-```text
+```text id="4gugp9"
 Esc
 ```
 
 返回 Normal Mode。
 
-需要养成一个非常重要的习惯：
+可以形成一个很重要的使用习惯：
 
-```text
-需要移动、删除、复制
-→ 先 Esc 回 Normal Mode
+```text id="krm3y0"
+需要移动 / 删除 / 复制
+        ↓
+回到 Normal Mode
 
 需要输入文字
-→ 再进入 Insert Mode
+        ↓
+进入 Insert Mode
 ```
 
 ---
@@ -781,225 +680,185 @@ Esc
 
 在 Normal Mode 下按：
 
-```text
+```text id="x8d02f"
 :
 ```
 
 进入 Command-line Mode。
 
-底部会出现：
+例如：
 
-```text
-:
-```
-
-然后可以输入命令。
-
-### `:w`：保存
-
-```text
+```text id="n5iqdw"
 :w
 ```
 
-将当前缓冲区内容写入文件。
+可以执行文件保存。
+
+Vim 官方将这一类功能归入 `editing.txt` 等帮助文档。
+
+### `:w`：保存文件
+
+```text id="g4t2qb"
+:w
+```
+
+将当前 buffer 写入文件。
+
+如果文件是只读的，或者由于其他原因无法写入，命令会失败；是否可以使用 `:w!` 强制写入还取决于具体情况。官方文档对 `:write` 的行为有详细说明。
 
 ---
 
 ### `:q`：退出
 
-```text
+```text id="xn6p7k"
 :q
 ```
 
-退出 Vim。
+退出当前窗口。
 
-如果文件有未保存的修改：
-
-```text
-E37: No write since last change
-```
-
-Vim 会拒绝直接退出。
+如果当前 buffer 存在未保存修改，Vim 默认不会直接退出，而会提示先保存。
 
 ---
 
-### `:q!`：不保存退出
+### `:q!`：放弃修改并退出
 
-```text
+```text id="a3dd9u"
 :q!
 ```
 
 放弃当前未保存的修改并退出。
 
+这里的 `!` 表示强制执行，不再因为当前修改而阻止退出。
+
 ---
 
 ### `:wq`：保存并退出
 
-```text
+```text id="m27o9v"
 :wq
 ```
 
-先保存，再退出。
+先保存当前文件，再关闭当前窗口。
 
-也可以：
+如果这是最后一个编辑窗口，则 Vim 退出。
 
-```text
+---
+
+### `ZZ`：保存并退出
+
+```text id="xgt4ji"
 ZZ
 ```
 
-在 Normal Mode 下直接保存并退出。
+`ZZ` 必须在 Normal Mode 下执行。
 
-`ZZ` 与 `:wq` 在常见场景下效果相近，但并非所有边界行为都完全等价。
+如果当前文件已经被修改，它会保存文件并关闭当前窗口；如果没有修改，则直接关闭当前窗口。
+
+官方文档将 `ZZ` 与 `:x` 归为同一类“写入并退出”操作。
 
 ---
 
-### `:w` + `:q`
+### `ZQ`：不保存退出
 
-也可以分两步：
-
-```text
-:w
-:q
+```text id="r7o74e"
+ZQ
 ```
 
-先保存，再退出。
+在 Normal Mode 下执行，相当于：
+
+```text id="j5m3oi"
+:q!
+```
 
 ---
 
-## 文本搜索
+## 搜索文本
 
-在 Normal Mode 下按：
+在 Normal Mode 下输入：
 
-```text
+```text id="n8zqpd"
 /
 ```
 
-然后输入搜索内容：
+进入搜索输入状态。
 
-```text
+例如：
+
+```text id="jz1q4t"
 /error
 ```
 
 按：
 
-```text
+```text id="8afk6j"
 Enter
 ```
 
-开始搜索。
+开始搜索 `error`。
 
-例如：
+Vim 的 `/` 搜索支持正则表达式模式，相关内容可参考官方 [Pattern and Search Commands](https://vimhelp.org/pattern.txt.html)。
 
-```text
+---
+
+### `n`：下一个匹配
+
+```text id="as2z7v"
+n
+```
+
+跳转到下一个匹配结果。
+
+---
+
+### `N`：上一个匹配
+
+```text id="7c9y8m"
+N
+```
+
+跳转到上一个匹配结果。
+
+Vim 会记住最近使用的搜索模式，因此：
+
+```text id="v5e0lm"
 /error
-```
-
-表示搜索：
-
-```text
-error
-```
-
----
-
-### `n`：下一个匹配项
-
-搜索完成后：
-
-```text
-n
-```
-
-移动到下一个匹配位置。
-
----
-
-### `N`：上一个匹配项
-
-```text
-N
-```
-
-移动到上一个匹配位置。
-
-因此：
-
-```text
-n
-→ 下一个匹配
-
-N
-→ 上一个匹配
-```
-
----
-
-### 搜索与命令行模式的关系
-
-严格来说：
-
-```text
-/
-```
-
-并不是一个独立于 Command-line Mode 的 Vim 模式。
-
-它会进入一种以搜索命令为输入的**命令行状态**。
-
-因此可以理解为：
-
-```text
-:
-→ 输入 Ex 命令
-
-/
-→ 输入正向搜索模式
-
-?
-→ 输入反向搜索模式
-```
-
-搜索完成后按：
-
-```text
 Enter
+n
+n
+n
 ```
 
-即可执行搜索，再按：
+可以连续跳转到后面的匹配项。
 
-```text
-Esc
-```
-
-可以取消当前搜索输入。
+官方文档明确说明 Vim 会保存最近使用的搜索模式，并由 `n` / `N` 重复搜索。
 
 ---
 
-## 查找并替换
+## 查找与替换
 
 ### `:%s/旧文本/新文本/g`
 
 例如：
 
-```text
+```text id="s41z1i"
 :%s/foo/bar/g
 ```
 
-表示将当前文件中所有行里的：
+表示将整个文件中的：
 
-```text
+```text id="7c4k5r"
 foo
 ```
 
 替换为：
 
-```text
+```text id="2qak1j"
 bar
 ```
 
-其中：
+这里：
 
-```text
+```text id="a4m8s1"
 :
 → 进入 Command-line Mode
 
@@ -1010,24 +869,24 @@ s
 → substitute，替换
 
 foo
-→ 要查找的内容
+→ 查找文本
 
 bar
-→ 替换后的内容
+→ 替换文本
 
 g
-→ 每一行中进行全部匹配，而不是只替换该行第一个匹配
+→ 每一行进行全部匹配替换
 ```
 
 因此：
 
-```text
+```text id="8y7l4b"
 :%s/foo/bar/g
 ```
 
 可以理解为：
 
-```text
+```text id="i4q5a9"
 整个文件
 +
 查找 foo
@@ -1041,91 +900,122 @@ g
 
 ### 只替换当前行
 
-```text
+```text id="r4n7h0"
 :s/foo/bar/g
 ```
 
-不写 `%` 时，默认作用范围为当前行。
+不指定范围时，默认作用于当前行。
 
 ---
 
-### 只替换指定行
+### 替换指定行
 
-例如：
-
-```text
+```text id="k5v5uz"
 :10,20s/foo/bar/g
 ```
 
 表示只处理：
 
-```text
-第 10 行 ～ 第 20 行
+```text id="rwy4w5"
+第 10 行到第 20 行
 ```
+
+关于 `:substitute` 的完整语法，可以在 Vim 中查看：
+
+```text id="x8vzgd"
+:help :substitute
+```
+
+也可以参考官方的 [Pattern and Search Commands](https://vimhelp.org/pattern.txt.html)。
 
 ---
 
-## Vim 中常见的编辑组合
+## Vim 中的“操作符 + 移动”
 
-Vim 很多命令实际上由：
+Vim 很多操作并不是一个按键完成，而是由：
 
-```text
-操作符 + 移动命令
+```text id="2bw0le"
+Operator + Motion
 ```
 
-组合而成。
+组成。
 
 例如：
 
-```text
+```text id="0pj6si"
 dw
 ```
 
-可以理解为：
+可以拆成：
 
-```text
-d + w
+```text id="7ni09f"
+d → delete
+w → word movement
 ```
 
-即：
+表示删除由 `w` 所定义的移动范围。
 
-```text
-删除 + 移动到下一个 word
-```
+---
 
-再例如：
+### `yw`：复制一个移动范围
 
-```text
-cw
-```
-
-即：
-
-```text
-修改 + 移动到下一个 word
-```
-
-类似地：
-
-```text
+```text id="88a0a5"
 yw
 ```
 
-表示：
+拆分：
 
-```text
-复制 + word 移动范围
+```text id="9z6c0g"
+y → yank
+w → movement
 ```
 
-因此：
+表示复制当前光标到 `w` 所定义范围的内容。
 
-```text
-d + movement
-c + movement
-y + movement
+---
+
+### `cw`：修改一个移动范围
+
+```text id="0ay1e9"
+cw
 ```
 
-构成了 Vim 非常重要的一套操作方式。
+拆分：
+
+```text id="2gc0mt"
+c → change
+w → movement
+```
+
+执行后进入 Insert Mode。
+
+不过如前面所述，Vim 对 `cw` 有历史兼容行为，官方文档明确说明它实际表现为 `ce`。
+
+---
+
+### `ci(`：结合 Text Object
+
+```text id="t2u45x"
+ci(
+```
+
+可以理解成：
+
+```text id="3xfqpi"
+c
++
+i(
+```
+
+即：
+
+```text id="vqpw9r"
+修改
++
+括号内部
+```
+
+这也是 Vim “操作符 + Text Object” 思维的典型例子。
 
 ---
 
@@ -1133,13 +1023,13 @@ y + movement
 
 ### 修改一个单词
 
-```text
+```text id="e8d9x8"
 cw
 ```
 
-输入新内容：
+输入新的内容后：
 
-```text
+```text id="k5pi5a"
 Esc
 ```
 
@@ -1147,7 +1037,7 @@ Esc
 
 ### 删除一整行
 
-```text
+```text id="9m19q8"
 dd
 ```
 
@@ -1155,37 +1045,37 @@ dd
 
 ### 复制一整行
 
-```text
+```text id="wmq4t3"
 yy
 ```
 
 ---
 
-### 粘贴复制内容
+### 粘贴一整行
 
-```text
+```text id="v7o3jv"
 p
 ```
 
 ---
 
-### 删除括号内部内容
+### 删除括号里的内容
 
-```text
+```text id="xyq3p9"
 ci(
 ```
 
 ---
 
-### 删除选中的内容
+### 选择后删除
 
-```text
+```text id="yv6r6m"
 v
 ```
 
-选择文本后：
+移动光标选择文本后：
 
-```text
+```text id="j6n5ak"
 d
 ```
 
@@ -1193,13 +1083,13 @@ d
 
 ### 搜索错误日志
 
-```text
+```text id="8qv5ng"
 /error
 ```
 
 然后：
 
-```text
+```text id="6b6v4j"
 n
 ```
 
@@ -1207,17 +1097,25 @@ n
 
 ---
 
-### 将整个文件中的字符串替换
+### 全文件字符串替换
 
-```text
+```text id="2uy22k"
 :%s/old/new/g
 ```
 
 ---
 
-### 强制退出而不保存
+### 保存并退出
 
-```text
+```text id="8y2wsa"
+:wq
+```
+
+---
+
+### 放弃修改并退出
+
+```text id="q7c3ls"
 :q!
 ```
 
@@ -1225,53 +1123,57 @@ n
 
 ## Vim 基础操作流程
 
-实际编辑服务器上的配置文件时，可以按照下面的流程：
+编辑服务器配置文件时，可以按照下面的流程：
 
-```text
+```text id="g60rzq"
 vim app.conf
-     ↓
-进入 Normal Mode
-     ↓
-使用移动命令找到目标位置
-     ↓
-i / a / o 等进入 Insert Mode
-     ↓
-修改文本
-     ↓
+      ↓
+Normal Mode
+      ↓
+移动光标
+      ↓
+i / a / o 等
+      ↓
+Insert Mode
+      ↓
+输入 / 修改文本
+      ↓
 Esc
-     ↓
-回到 Normal Mode
-     ↓
+      ↓
+Normal Mode
+      ↓
 :wq
-     ↓
+      ↓
 保存并退出
 ```
 
-如果只是查看文件：
+如果只是查看和搜索：
 
-```text
+```text id="9w4d8p"
 vim app.conf
-     ↓
-搜索 /error
-     ↓
+      ↓
+/error
+      ↓
 n / N
-     ↓
+      ↓
 :q
 ```
 
-如果需要放弃修改：
+如果修改后决定放弃：
 
-```text
+```text id="y4gp8e"
 :q!
 ```
 
 ---
 
-## Vim 最需要掌握的思维方式
+## 推荐记忆方式
 
-Vim 不应该只记成一堆快捷键，而应该理解为：
+Vim 不建议完全按照“快捷键表”死记。
 
-```text
+更重要的是理解：
+
+```text id="k5om5a"
 模式
 +
 操作符
@@ -1283,53 +1185,56 @@ Vim 不应该只记成一堆快捷键，而应该理解为：
 
 例如：
 
-```text
+```text id="0r7q7i"
 dw
 ```
 
 表示：
 
-```text
-d → 删除
-w → 移动一个 word
+```text id="e7sj8b"
+删除
++
+word 移动范围
 ```
 
-```text
+```text id="6k0ynm"
 cw
 ```
 
 表示：
 
-```text
-c → 修改
-w → 一个 word 的移动范围
+```text id="47n0dp"
+修改
++
+word 移动范围
 ```
 
-```text
+```text id="j92hsy"
 ci(
 ```
 
 表示：
 
-```text
-c
+```text id="h4jy1x"
+修改
 +
-i(
-→ 修改括号内部内容
+括号内部
 ```
 
 而：
 
-```text
+```text id="l5pvmb"
 dd
 yy
 ```
 
-则属于常用的整行操作：
+则是常见的整行操作：
 
-```text
+```text id="lt56m4"
 dd → 删除当前行
 yy → 复制当前行
 ```
 
-掌握这种组合方式后，Vim 中大量命令实际上可以通过规律推导出来，而不是全部依靠死记硬背。
+这种方式比单纯背诵大量快捷键更容易建立 Vim 的操作体系。
+
+Vim 官方文档本身也是按照这种思路组织的：移动命令、操作符、文本对象、Visual Mode、重复操作等功能分别有独立的帮助章节，可以通过 `:help` 在 Vim 内部继续深入学习。
