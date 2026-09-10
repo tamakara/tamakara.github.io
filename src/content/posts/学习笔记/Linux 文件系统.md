@@ -2,7 +2,7 @@
 title: Linux 文件系统
 published: 2026-09-10
 image: ''
-tags: [Linux, 操作系统, 运维]
+tags: [Linux, 文件, 操作系统, 运维]
 category: 学习笔记
 ---
 > 本文以 **CentOS** 为主要环境，介绍 Linux 文件系统的基本目录结构，以及各目录在服务器运维中的主要作用。

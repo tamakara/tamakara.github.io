@@ -1456,256 +1456,6 @@ scp 源 用户@主机:目标路径
 
 ---
 
-## Shell 后台运行
-
-在服务器上运行 Java、Python 等长期运行的程序时，经常会看到：
-
-```bash
-nohup java -jar app.jar > app.log 2>&1 &
-```
-
-这条命令实际上同时使用了多个不同的 Shell 特性，需要分别理解。
-
-### `&`：后台运行
-
-在 Shell 中，命令末尾加上：
-
-```bash
-&
-```
-
-表示让这条命令作为**后台作业（background job）**运行。
-
-例如：
-
-```bash
-java -jar app.jar &
-```
-
-执行后，Shell 不会一直等待：
-
-```text
-java -jar app.jar
-```
-
-运行结束，而是立即返回命令提示符，可以继续输入其他命令。
-
-可以理解为：
-
-```text
-java -jar app.jar
-        ↓
-       &
-        ↓
-后台执行
-        ↓
-Shell 立即返回
-```
-
-查看当前 Shell 管理的后台作业：
-
-```bash
-jobs
-```
-
-例如：
-
-```text
-[1]+  Running    java -jar app.jar &
-```
-
-这里的：
-
-```text
-[1]
-```
-
-是当前 Shell 中的作业编号（job ID），而不是进程 PID。
-
-也可以使用：
-
-```bash
-fg %1
-```
-
-将作业重新切换到前台。
-
-或者：
-
-```bash
-bg %1
-```
-
-让一个已经暂停的作业继续在后台运行。
-
-因此需要明确：
-
-```text
-&
-
-→ 让 Shell 在后台运行命令
-```
-
-它解决的是**当前 Shell 是否等待命令结束**的问题。
-
-`&` 本身并不意味着程序可以在退出终端后继续运行。
-
-### `nohup`：忽略 `SIGHUP`
-
-`nohup` 的主要作用不是让程序进入后台，而是让程序对终端关闭时可能产生的：
-
-```text
-SIGHUP
-```
-
-信号采取忽略处理。
-
-例如：
-
-```bash
-nohup java -jar app.jar
-```
-
-这里的 `nohup` 主要解决的是：
-
-```text
-终端关闭
-    ↓
-可能产生 SIGHUP
-    ↓
-程序忽略 SIGHUP
-```
-
-因此：
-
-```text
-nohup
-≠
-后台运行
-```
-
-真正让 Shell 不等待命令结束的是：
-
-```bash
-&
-```
-
-### `nohup` 和 `&` 的区别
-
-两者可以分别理解：
-
-```text
-&
-
-→ 后台运行
-→ 解决“当前 Shell 是否等待”
-
-nohup
-
-→ 忽略 SIGHUP
-→ 解决“终端退出后程序是否可能受到影响”
-```
-
-例如：
-
-```bash
-java -jar app.jar &
-```
-
-表示后台运行，但没有使用 `nohup`。
-
-而：
-
-```bash
-nohup java -jar app.jar
-```
-
-使用了 `nohup`，但没有 `&`，因此命令本身仍然以前台方式运行，当前 Shell 仍会等待它。
-
-所以服务器上经常组合使用：
-
-```bash
-nohup java -jar app.jar &
-```
-
-或者进一步把输出保存到日志：
-
-```bash
-nohup java -jar app.jar > app.log 2>&1 &
-```
-
-### `nohup java -jar app.jar > app.log 2>&1 &` 如何理解
-
-整条命令可以拆成：
-
-```text
-nohup
-
-→ 忽略 SIGHUP
-
-java -jar app.jar
-
-→ 启动 Java 应用
-
-> app.log
-
-→ 标准输出重定向到 app.log
-
-2>&1
-
-→ 标准错误重定向到标准输出当前指向的位置
-
-&
-
-→ 后台运行
-```
-
-因此最终可以理解为：
-
-```text
-                    java -jar app.jar
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-           stdout                    stderr
-              │                         │
-              ↓                         ↓
-         app.log ←────────────── 2>&1
-                           
-nohup
-  │
-  └→ 忽略 SIGHUP
-
-&
-  │
-  └→ Shell 后台运行
-```
-
-最终达到的效果是：
-
-```text
-程序在后台运行
-        +
-终端退出时避免因 SIGHUP 受到影响
-        +
-标准输出写入 app.log
-        +
-标准错误也写入 app.log
-```
-
-需要注意，这种方式只是**从 Shell 中启动一个后台进程**。对于需要长期运行、自动重启、开机启动和统一日志管理的服务器程序，更推荐使用：
-
-```bash
-systemctl
-```
-
-交给 `systemd` 管理。
-
-参考：
-
-[Bash Reference Manual - Job Control](https://www.gnu.org/software/bash/manual/html_node/Job-Control.html)
-
-[GNU Coreutils - `nohup`](https://www.gnu.org/software/coreutils/manual/html_node/nohup-invocation.html)
 
 ## Shell 运算符
 
@@ -2347,159 +2097,256 @@ stdout → app.log
 
 ---
 
-## Shell 运算符综合示例
+## Shell 后台运行
 
-### 管道 + 文本搜索
+在服务器上运行 Java、Python 等长期运行的程序时，经常会看到：
 
 ```bash
-ps -ef | grep java
+nohup java -jar app.jar > app.log 2>&1 &
 ```
+
+这条命令实际上同时使用了多个不同的 Shell 特性，需要分别理解。
+
+### `&`：后台运行
+
+在 Shell 中，命令末尾加上：
+
+```bash
+&
+```
+
+表示让这条命令作为**后台作业（background job）**运行。
+
+例如：
+
+```bash
+java -jar app.jar &
+```
+
+执行后，Shell 不会一直等待：
 
 ```text
-ps
-→ 输出进程列表
-→ 管道
-→ grep
-→ 过滤 java
+java -jar app.jar
 ```
 
-### 输出重定向
+运行结束，而是立即返回命令提示符，可以继续输入其他命令。
 
-```bash
-ls -lah > files.txt
-```
+可以理解为：
 
 ```text
-ls
-→ stdout
-→ files.txt
+java -jar app.jar
+        ↓
+       &
+        ↓
+后台执行
+        ↓
+Shell 立即返回
 ```
 
-### 追加日志
+查看当前 Shell 管理的后台作业：
 
 ```bash
-echo "server started" >> app.log
+jobs
 ```
+
+例如：
 
 ```text
-echo
-→ stdout
-→ 追加到 app.log
+[1]+  Running    java -jar app.jar &
 ```
 
-### 输入重定向
-
-```bash
-wc -l < app.log
-```
+这里的：
 
 ```text
-app.log
-→ stdin
-→ wc
+[1]
 ```
 
-### 标准输出和错误一起写入日志
+是当前 Shell 中的作业编号（job ID），而不是进程 PID。
+
+也可以使用：
 
 ```bash
-command > app.log 2>&1
+fg %1
 ```
+
+将作业重新切换到前台。
+
+或者：
+
+```bash
+bg %1
+```
+
+让一个已经暂停的作业继续在后台运行。
+
+因此需要明确：
 
 ```text
-stdout → app.log
-stderr → app.log
+&
+
+→ 让 Shell 在后台运行命令
 ```
 
-### Here Document
+它解决的是**当前 Shell 是否等待命令结束**的问题。
 
-```bash
-cat << EOF
-server:
-  port: 8080
-EOF
-```
+`&` 本身并不意味着程序可以在退出终端后继续运行。
 
-### Here String
+### `nohup`：忽略 `SIGHUP`
 
-```bash
-grep "error" <<< "this is an error message"
-```
-
-### 命令替换
-
-```bash
-echo "Current time: $(date)"
-```
-
----
-
-## 常见概念之间的关系
-
-Shell 命令执行时，通常会同时涉及：
+`nohup` 的主要作用不是让程序进入后台，而是让程序对终端关闭时可能产生的：
 
 ```text
-命令
-+
-参数
-+
-标准输入
-+
-标准输出
-+
-标准错误
-+
-重定向
-+
-管道
-+
-命令替换
+SIGHUP
+```
+
+信号采取忽略处理。
+
+例如：
+
+```bash
+nohup java -jar app.jar
+```
+
+这里的 `nohup` 主要解决的是：
+
+```text
+终端关闭
+    ↓
+可能产生 SIGHUP
+    ↓
+程序忽略 SIGHUP
+```
+
+因此：
+
+```text
+nohup
+≠
+后台运行
+```
+
+真正让 Shell 不等待命令结束的是：
+
+```bash
+&
+```
+
+### `nohup` 和 `&` 的区别
+
+两者可以分别理解：
+
+```text
+&
+
+→ 后台运行
+→ 解决“当前 Shell 是否等待”
+
+nohup
+
+→ 忽略 SIGHUP
+→ 解决“终端退出后程序是否可能受到影响”
 ```
 
 例如：
 
 ```bash
-ps -ef | grep java > java.log 2>&1
+java -jar app.jar &
 ```
 
-可以拆解为：
+表示后台运行，但没有使用 `nohup`。
 
-```text
-ps -ef
-   ↓
-stdout
-   ↓
-|
-   ↓
-grep java
-   ↓
-stdout → java.log
-
-stderr → java.log
-```
-
-再例如：
+而：
 
 ```bash
-echo "$(date)" >> app.log
+nohup java -jar app.jar
 ```
 
-执行顺序可以理解为：
+使用了 `nohup`，但没有 `&`，因此命令本身仍然以前台方式运行，当前 Shell 仍会等待它。
+
+所以服务器上经常组合使用：
+
+```bash
+nohup java -jar app.jar &
+```
+
+或者进一步把输出保存到日志：
+
+```bash
+nohup java -jar app.jar > app.log 2>&1 &
+```
+
+### `nohup java -jar app.jar > app.log 2>&1 &` 如何理解
+
+整条命令可以拆成：
 
 ```text
-$(date)
-→ 执行 date
-→ 得到时间字符串
+nohup
 
-echo
-→ 输出字符串
+→ 忽略 SIGHUP
 
->>
-→ 追加到 app.log
+java -jar app.jar
+
+→ 启动 Java 应用
+
+> app.log
+
+→ 标准输出重定向到 app.log
+
+2>&1
+
+→ 标准错误重定向到标准输出当前指向的位置
+
+&
+
+→ 后台运行
 ```
 
-掌握这些运算符之后，就能够理解大量 Linux 命令组合，而不是只能机械记忆单条命令。
+因此最终可以理解为：
 
----
+```text
+                    java -jar app.jar
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+           stdout                    stderr
+              │                         │
+              ↓                         ↓
+         app.log ←────────────── 2>&1
+                           
+nohup
+  │
+  └→ 忽略 SIGHUP
+
+&
+  │
+  └→ Shell 后台运行
+```
+
+最终达到的效果是：
+
+```text
+程序在后台运行
+        +
+终端退出时避免因 SIGHUP 受到影响
+        +
+标准输出写入 app.log
+        +
+标准错误也写入 app.log
+```
+
+需要注意，这种方式只是**从 Shell 中启动一个后台进程**。对于需要长期运行、自动重启、开机启动和统一日志管理的服务器程序，更推荐使用：
+
+```bash
+systemctl
+```
+
+交给 `systemd` 管理。
+
+参考：
+
+[Bash Reference Manual - Job Control](https://www.gnu.org/software/bash/manual/html_node/Job-Control.html)
+
+[GNU Coreutils - `nohup`](https://www.gnu.org/software/coreutils/manual/html_node/nohup-invocation.html)
 
 ## 软件包管理
 
