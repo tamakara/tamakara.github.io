@@ -11,9 +11,9 @@ category: 学习笔记
 
 ## 终端快捷键
 
-Linux 终端中的快捷键主要由**终端驱动、Shell 和 Readline**共同处理。不同快捷键承担的职责并不相同：有些会向前台进程发送信号，有些只是控制当前命令行输入。
+Linux 终端中的快捷键主要由**终端驱动、Shell 和 Readline**共同处理。不同快捷键承担的职责并不相同：有些会向前台进程组发送信号，有些则负责控制当前命令行输入。
 
-Bash 使用 GNU Readline 读取和编辑命令行，因此 `Ctrl + R`、`Ctrl + A`、`Ctrl + E` 等快捷键属于命令行编辑功能。
+Bash 使用 GNU Readline 编辑交互式命令行，因此 `Ctrl + R`、`Ctrl + A`、`Ctrl + E` 等快捷键属于命令行编辑功能。
 
 参考：[Bash Reference Manual - Command Line Editing](https://www.gnu.org/software/bash/manual/html_node/Command-Line-Editing.html)
 
@@ -25,7 +25,7 @@ Ctrl + C
 SIGINT (2)
 ```
 
-`Ctrl + C` 会使终端驱动向当前**前台进程组**发送 `SIGINT`（Interrupt）信号。
+`Ctrl + C` 会使终端驱动向当前前台进程组发送 `SIGINT`（Interrupt）信号。
 
 例如：
 
@@ -51,9 +51,9 @@ kill PID
 → 默认发送 SIGTERM (15)
 ```
 
-`SIGINT` 和 `SIGTERM` 都可以被程序捕获和处理，因此程序可以自行决定收到信号后执行什么操作。
+`SIGINT` 和 `SIGTERM` 都可以被进程捕获和处理，因此程序收到信号后可以执行自己的清理逻辑。
 
-参考：[signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html)
+参考：[Linux signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html)
 
 ### `Ctrl + Z`：发送 `SIGTSTP`
 
@@ -115,7 +115,7 @@ Ctrl + Z
 
 它表示当前终端输入一个 **EOF（End Of File）**。
 
-当 Shell 正在等待输入，并且当前输入缓冲区为空时，收到 EOF 后通常会结束当前 Shell。
+当交互式 Shell 正在等待输入，并且当前输入缓冲区为空时，收到 EOF 后通常会退出当前 Shell。
 
 因此：
 
@@ -124,14 +124,10 @@ Ctrl + D
 → 输入 EOF
 
 exit
-→ 执行 Shell 的退出命令
+→ 执行 Shell 内建命令退出
 ```
 
-在交互式 Shell 中，两者通常都表现为退出当前 Shell，但底层含义不同。
-
-另外，Bash 可以通过 `set -o ignoreeof` 改变收到 EOF 后的默认行为。
-
-参考：[Bash Reference Manual - Bash Builtin `set`](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html)
+两者在交互式 Shell 中通常都会表现为退出当前 Shell，但底层含义不同。
 
 ### `Ctrl + R`：反向搜索历史命令
 
@@ -147,7 +143,7 @@ Ctrl + R
 ssh
 ```
 
-Bash 会实时搜索历史记录中匹配的命令。
+Bash 会搜索历史记录中包含该关键字的命令。
 
 继续按：
 
@@ -155,7 +151,7 @@ Bash 会实时搜索历史记录中匹配的命令。
 Ctrl + R
 ```
 
-可以继续查找更早的匹配项。
+可以继续向更早的历史记录搜索。
 
 参考：[Bash Reference Manual - Searching for Commands in the History](https://www.gnu.org/software/bash/manual/html_node/Searching.html)
 
@@ -165,15 +161,15 @@ Ctrl + R
 Ctrl + L
 ```
 
-重新绘制终端显示，使当前可见内容被清除。
+重新绘制当前终端显示。
 
-效果通常与：
+通常可以达到与：
 
 ```bash
 clear
 ```
 
-类似。
+类似的视觉效果。
 
 它不会删除：
 
@@ -181,7 +177,7 @@ clear
 Shell 历史记录
 ```
 
-也不会删除实际文件内容。
+也不会删除任何文件内容。
 
 ### `Ctrl + A`：移动到行首
 
@@ -189,7 +185,7 @@ Shell 历史记录
 Ctrl + A
 ```
 
-将光标移动到当前命令行的开头。
+将光标移动到当前命令行开头。
 
 ### `Ctrl + E`：移动到行尾
 
@@ -197,7 +193,7 @@ Ctrl + A
 Ctrl + E
 ```
 
-将光标移动到当前命令行的结尾。
+将光标移动到当前命令行结尾。
 
 ### `Ctrl + ← / →`：按单词移动
 
@@ -213,7 +209,7 @@ Ctrl + →
 
 向右移动一个单词。
 
-具体按键行为还会受到终端和 Readline 配置影响。
+具体行为会受到终端和 Readline 配置影响。
 
 ---
 
@@ -226,18 +222,6 @@ Linux 文件系统以：
 ```
 
 作为根目录。
-
-常见目录：
-
-```text
-/
-├── etc
-├── home
-├── opt
-├── tmp
-├── usr
-└── var
-```
 
 路径主要分为：
 
@@ -292,8 +276,6 @@ pwd
 cd /var/log
 ```
 
-进入 `/var/log`。
-
 常用：
 
 ```bash
@@ -308,8 +290,6 @@ cd -       # 上一次所在目录
 ```bash
 ls
 ```
-
-查看当前目录内容。
 
 详细信息：
 
@@ -336,7 +316,7 @@ ls -l
 ls -a
 ```
 
-以更易读的单位显示文件大小：
+以易读单位显示文件大小：
 
 ```bash
 ls -lh
@@ -366,7 +346,7 @@ mkdir test
 mkdir -p /data/app/logs
 ```
 
-`-p` 表示自动创建不存在的父目录，并且目标目录已经存在时不会报错。
+`-p` 会自动创建不存在的父目录。
 
 ### `rmdir`：删除空目录
 
@@ -376,7 +356,7 @@ rmdir test
 
 只能删除空目录。
 
-如果目录中还有文件或其他目录，需要使用递归删除方式：
+如果目录中还有内容，需要使用：
 
 ```bash
 rm -r test
@@ -388,18 +368,9 @@ rm -r test
 touch test.txt
 ```
 
-如果文件不存在：
+如果文件不存在，则创建文件。
 
-```text
-创建文件
-```
-
-如果文件已经存在：
-
-```text
-不修改文件内容
-更新文件时间戳
-```
+如果文件已经存在，则不会修改文件内容，而是更新文件的时间戳。
 
 ### `cp`：复制文件或目录
 
@@ -437,9 +408,9 @@ mv app.log /var/log/
 mv old.txt new.txt
 ```
 
-`mv` 同时承担移动和重命名的功能。
+`mv` 同时用于移动和重命名。
 
-在同一个文件系统中移动文件时，通常只是修改目录项；跨文件系统时则可能退化为复制后删除。
+在同一文件系统中移动文件时，通常只需要修改目录项；跨文件系统时则可能需要执行复制后删除。
 
 参考：[GNU Coreutils - `cp`](https://www.gnu.org/software/coreutils/manual/html_node/cp-invocation.html)、[GNU Coreutils - `mv`](https://www.gnu.org/software/coreutils/manual/html_node/mv-invocation.html)
 
@@ -451,7 +422,7 @@ mv old.txt new.txt
 rm test.txt
 ```
 
-删除目录：
+递归删除目录：
 
 ```bash
 rm -r test
@@ -466,19 +437,16 @@ rm -rf test
 其中：
 
 ```text
--r    递归处理目录
--f    强制删除，不进行部分确认
+-r
+→ 递归处理目录
+
+-f
+→ 强制删除
 ```
 
-`rm` 删除的文件**不会进入图形界面的回收站**。
+`rm` 删除的文件不会进入图形界面的回收站。
 
-尤其需要注意：
-
-```bash
-rm -rf
-```
-
-可能造成不可逆的数据丢失，执行前必须确认路径和命令参数。
+执行 `rm -rf` 前必须确认目标路径。
 
 参考：[GNU Coreutils - `rm`](https://www.gnu.org/software/coreutils/manual/html_node/rm-invocation.html)
 
@@ -490,7 +458,7 @@ rm -rf
 ln file.txt hard.txt
 ```
 
-硬链接创建一个新的目录项，使其与原文件指向同一个 inode。
+硬链接创建一个新的目录项，使它与原文件指向同一个 inode。
 
 因此：
 
@@ -501,7 +469,7 @@ hard.txt
 同一个 inode
 ```
 
-删除其中一个目录项不会立即删除文件数据，只要仍然存在其他硬链接，并且没有其他原因导致 inode 被回收。
+删除其中一个目录项后，只要仍有其他硬链接指向该 inode，文件数据仍然存在。
 
 硬链接通常不能跨文件系统创建，也不能直接对目录创建普通硬链接。
 
@@ -519,7 +487,7 @@ app.jar
 /opt/app/app.jar
 ```
 
-如果目标文件被删除，软链接本身仍然存在，但会变成悬空链接。
+如果目标不存在，软链接本身仍然可以存在，但会成为悬空链接。
 
 ---
 
@@ -541,7 +509,7 @@ cat app.conf
 less app.log
 ```
 
-适合查看较大的文件。
+适合查看较大的文本文件。
 
 常用操作：
 
@@ -613,13 +581,13 @@ tail -f app.log
 
 ### `find`：查找文件
 
-按照名称查找：
+按照名称：
 
 ```bash
 find /opt -name "app.jar"
 ```
 
-按照文件类型查找：
+按照文件类型：
 
 ```bash
 find /opt -type f
@@ -675,7 +643,7 @@ grep -r "ERROR" /var/log
 grep -n "ERROR" app.log
 ```
 
-表示搜索 `ERROR`，同时显示匹配行的行号。
+表示搜索 `ERROR`，同时显示匹配行号。
 
 ### `wc`：统计文本
 
@@ -683,7 +651,7 @@ grep -n "ERROR" app.log
 wc app.log
 ```
 
-默认依次输出：
+默认显示：
 
 ```text
 行数
@@ -709,7 +677,7 @@ wc -w app.log
 wc -c app.log
 ```
 
-需要注意，`wc` 的“行”本质上是统计换行符数量，而不是简单统计“文本看起来有多少行”。
+`wc -l` 统计的是换行符数量，因此严格来说不是简单地统计“看起来有多少行”。
 
 参考：[GNU Coreutils - `wc`](https://www.gnu.org/software/coreutils/manual/html_node/wc-invocation.html)
 
@@ -723,7 +691,7 @@ wc -c app.log
 which java
 ```
 
-根据当前环境中的 `PATH` 查找对应的可执行文件。
+根据当前环境的 `PATH` 查找可执行文件。
 
 例如：
 
@@ -731,7 +699,7 @@ which java
 /usr/bin/java
 ```
 
-需要注意，`which` 主要用于查找可执行文件，对于 Shell 内建命令并不可靠。
+需要注意，`which` 主要用于查找外部可执行文件，对于 Shell 内建命令并不适合。
 
 例如：
 
@@ -739,23 +707,16 @@ which java
 which cd
 ```
 
-可能无法得到有意义的结果，因为 `cd` 通常是 Shell 内建命令。
+可能得不到有效结果，因为 `cd` 通常是 Shell 内建命令。
 
-对于 Bash，可以使用：
+可以使用：
 
 ```bash
 type cd
 type java
 ```
 
-判断命令究竟是：
-
-```text
-Shell builtin
-alias
-function
-外部可执行文件
-```
+查看命令具体是什么类型。
 
 ### `history`：查看历史命令
 
@@ -773,13 +734,13 @@ history
 102  systemctl restart myapp
 ```
 
-可以通过历史编号执行：
+执行指定历史命令：
 
 ```bash
 !102
 ```
 
-Bash 的历史记录具体保存位置和行为还受 `HISTFILE`、`HISTSIZE` 等配置影响。
+Bash 历史记录还受到 `HISTFILE`、`HISTSIZE` 等配置影响。
 
 ### `getent`：查询系统名称服务数据库
 
@@ -797,20 +758,12 @@ getent group wheel
 
 查询用户组信息。
 
-`getent` 通过系统的 **NSS（Name Service Switch）** 查询信息，因此查询结果不一定只来自：
+`getent` 通过系统的 **NSS（Name Service Switch）** 查询信息，因此结果不一定只来自：
 
 ```text
 /etc/passwd
 /etc/group
 ```
-
-这也是它与直接：
-
-```bash
-cat /etc/passwd
-```
-
-的一个重要区别。
 
 ### `hostnamectl`：查看主机信息
 
@@ -824,7 +777,7 @@ hostnamectl
 主机名
 操作系统
 内核
-架构
+系统架构
 ```
 
 修改主机名：
@@ -855,7 +808,7 @@ Shell 会先展开：
 $PATH
 ```
 
-然后将展开后的结果作为参数传给 `echo`。
+然后把展开后的结果作为参数传给 `echo`。
 
 ### `export`：设置环境变量
 
@@ -875,7 +828,7 @@ echo $JAVA_HOME
 export PATH=$PATH:/opt/java/bin
 ```
 
-使用 `export` 设置的变量会进入当前 Shell 的**环境变量**，并被该 Shell 启动的子进程继承。
+使用 `export` 设置的变量会成为当前 Shell 的环境变量，并被当前 Shell 启动的子进程继承。
 
 例如：
 
@@ -886,11 +839,11 @@ export PATH=$PATH:/opt/java/bin
 子进程 B
 ```
 
-A 和 B 可以读取当前 Shell 导出的变量。
+A 和 B 都可以读取已经导出的变量。
 
 但环境变量不会自动反向影响父 Shell，也不会永久写入系统配置。
 
-如果需要每次登录都生效，通常需要根据使用场景写入：
+如果需要每次启动 Shell 都生效，通常需要写入：
 
 ```text
 ~/.bashrc
@@ -906,7 +859,7 @@ A 和 B 可以读取当前 Shell 导出的变量。
 
 Linux 用户和用户组是权限控制的重要组成部分。
 
-一个文件通常具有：
+文件通常具有：
 
 ```text
 所有者 User
@@ -918,8 +871,6 @@ Linux 用户和用户组是权限控制的重要组成部分。
 ```bash
 id
 ```
-
-查看当前用户。
 
 查看指定用户：
 
@@ -952,8 +903,6 @@ groups
 useradd user1
 ```
 
-创建用户。
-
 指定家目录：
 
 ```bash
@@ -966,7 +915,7 @@ useradd -d /home/user1 user1
 passwd user1
 ```
 
-创建用户和设置密码是两个不同的操作。
+创建用户与设置密码是两个不同的操作。
 
 ### `userdel`：删除用户
 
@@ -982,7 +931,7 @@ userdel -r user1
 
 ### `usermod`：修改用户
 
-例如将用户加入 `wheel` 组：
+例如将用户添加到 `wheel` 组：
 
 ```bash
 usermod -aG wheel user1
@@ -1004,7 +953,7 @@ usermod -aG wheel user1
 usermod -aG group user
 ```
 
-而不是单独使用 `-G`，因为单独使用 `-G` 可能覆盖原有附加组。
+而不是单独使用 `-G`，因为单独使用 `-G` 可能覆盖用户原有的附加组。
 
 参考：[RHEL 9 - Managing users and groups](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_basic_system_settings/managing-users-and-groups_configuring-basic-system-settings)
 
@@ -1065,21 +1014,15 @@ x
 User | Group | Other
 ```
 
-第一个字符：
+第一个字符表示文件类型：
 
 ```text
 -
-```
+→ 普通文件
 
-表示这是普通文件。
-
-如果是：
-
-```text
 d
+→ 目录
 ```
-
-则表示目录。
 
 ### `chmod`：修改权限
 
@@ -1121,17 +1064,19 @@ chmod u+x script.sh
 
 表示给文件所有者增加执行权限。
 
-需要注意，目录上的 `r`、`w`、`x` 与普通文件并不完全一样：
+### 目录权限的特殊含义
+
+目录上的 `r`、`w`、`x` 与普通文件不同。
 
 ```text
 目录 r
-→ 可以读取目录项名称
+→ 可以读取目录中的名称列表
 
 目录 w
 → 可以创建、删除、重命名目录项
 
 目录 x
-→ 可以进入目录，并访问目录中已知名称的对象
+→ 可以进入目录，并访问其中已知名称的对象
 ```
 
 因此：
@@ -1140,11 +1085,9 @@ chmod u+x script.sh
 目录只有 r
 ```
 
-并不意味着用户可以正常访问其中所有文件。
+并不意味着用户可以正常访问目录中的所有文件。
 
 ### `chown`：修改所有者
-
-修改所有者：
 
 ```bash
 chown user1 app.log
@@ -1180,15 +1123,15 @@ chgrp developers app.log
 su user1
 ```
 
-切换到 `user1` 用户。
+切换到 `user1`。
 
-登录 Shell：
+使用登录方式：
 
 ```bash
 su - user1
 ```
 
-`-` 表示按照登录 Shell 的方式初始化环境，而不是简单地继承当前 Shell 的工作环境。
+`-` 会以登录 Shell 的方式初始化环境。
 
 切换到 root：
 
@@ -1204,26 +1147,16 @@ su -
 sudo systemctl restart myapp
 ```
 
-如果当前用户拥有对应的 sudo 权限，该命令通常会以 root 身份执行。
+如果当前用户拥有相应权限，该命令通常会以 root 身份执行。
 
-`sudo` 并不是“自动拥有 root 权限”，它受：
+`sudo` 并不意味着当前用户永久获得 root 权限，而是根据 sudoers 配置授权某些命令或操作。
+
+相关配置：
 
 ```text
 /etc/sudoers
 /etc/sudoers.d/
 ```
-
-等授权配置控制。
-
-RHEL 默认使用 `wheel` 组管理常见的管理员 sudo 权限。
-
-例如：
-
-```bash
-usermod -aG wheel user1
-```
-
-然后由 sudoers 规则决定该组是否拥有相应权限。
 
 参考：[RHEL 9 - Managing sudo access](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_basic_system_settings/managing-sudo-access_configuring-basic-system-settings)
 
@@ -1233,7 +1166,7 @@ usermod -aG wheel user1
 
 ### `ps`：查看进程
 
-查看当前 Shell 相关进程：
+查看当前进程：
 
 ```bash
 ps
@@ -1251,7 +1184,7 @@ ps -ef
 ps -ef | grep java
 ```
 
-用于查找 Java 相关进程。
+用于查找 Java 进程。
 
 常见字段：
 
@@ -1275,8 +1208,8 @@ top
 可以实时查看：
 
 ```text
-CPU 使用情况
-内存使用情况
+CPU
+内存
 进程数量
 进程状态
 进程资源占用
@@ -1320,18 +1253,18 @@ kill -9 1234
 SIGKILL (9)
 ```
 
-`SIGKILL` 不能被进程捕获、忽略或处理，因此程序没有机会执行自己的清理逻辑。
+`SIGKILL` 无法被进程捕获、忽略或处理，因此程序没有机会执行自己的清理逻辑。
 
 通常应该：
 
 ```text
 SIGTERM
    ↓
-等待程序正常退出
+等待正常退出
    ↓
 仍未退出
    ↓
-再考虑 SIGKILL
+考虑 SIGKILL
 ```
 
 `kill` 的本质是：
@@ -1340,9 +1273,9 @@ SIGTERM
 向进程发送信号
 ```
 
-而不是“kill 命令一定会立即杀掉进程”。
+并不是简单意义上的“杀掉进程”。
 
-参考：[Linux `signal(7)`](https://man7.org/linux/man-pages/man7/signal.7.html)、[Linux `kill(1)`](https://man7.org/linux/man-pages/man1/kill.1.html)
+参考：[Linux `signal(7)`](https://man7.org/linux/man-pages/man7/signal.7.html)
 
 ---
 
@@ -1358,28 +1291,26 @@ df -h
 
 ```text
 Size
-→ 文件系统总容量
+→ 总容量
 
 Used
 → 已使用空间
 
 Avail
-→ 普通用户可用空间
+→ 可用空间
 
 Use%
-→ 已使用比例
+→ 使用率
 
 Mounted on
 → 挂载点
 ```
 
-`df` 关注的是：
+`df` 主要回答：
 
 ```text
-文件系统还剩多少空间？
+这个文件系统还剩多少空间？
 ```
-
-而不是某个具体目录有多大。
 
 ### `du`：查看目录或文件占用空间
 
@@ -1407,13 +1338,11 @@ du -sh /var/log/*
 
 ```text
 df
-→ 文件系统整体空间
+→ 看文件系统整体空间
 
 du
-→ 文件 / 目录具体占用
+→ 看具体目录 / 文件占用
 ```
-
-排查磁盘空间问题时通常两者结合使用。
 
 ---
 
@@ -1434,7 +1363,7 @@ ping -c 4 127.0.0.1
 可以观察：
 
 ```text
-目标是否能够通过 ICMP 响应
+ICMP 是否能够得到响应
 往返延迟
 丢包情况
 ```
@@ -1447,9 +1376,9 @@ ping 成功
 目标 TCP/UDP 端口一定开放
 ```
 
-因为 `ping` 使用的是 ICMP，而不是 TCP 或 UDP。
+因为 `ping` 使用的是 ICMP。
 
-### `curl`：发送 HTTP 请求
+### `curl`：发送网络请求
 
 ```bash
 curl http://localhost:8080
@@ -1467,11 +1396,11 @@ curl -I http://localhost:8080
 curl -X POST http://localhost:8080/api/test
 ```
 
-`curl` 常用于：
+适合：
 
 ```text
 测试 Web 服务
-测试 REST API
+测试 HTTP API
 检查 HTTP 响应
 ```
 
@@ -1483,14 +1412,14 @@ wget https://example.com/app.tar.gz
 
 主要用于从网络下载文件。
 
-因此：
+因此可以简单区分：
 
 ```text
 curl
-→ 更偏向发送 / 调试网络请求
+→ 更偏向请求和调试
 
 wget
-→ 更偏向下载文件
+→ 更偏向下载
 ```
 
 ---
@@ -1523,9 +1452,7 @@ scp -r app user@server:/opt/
 scp 源 用户@主机:目标路径
 ```
 
-`scp` 使用 SSH 进行身份认证和传输。
-
-如果是大量目录的重复同步，通常会使用 `rsync`；但它属于额外工具，不在本文基础命令范围内。
+`scp` 使用 SSH 完成远程认证和数据传输。
 
 ---
 
@@ -1539,23 +1466,23 @@ scp 源 用户@主机:目标路径
 nohup ./app.sh &
 ```
 
-常见：
+常见写法：
 
 ```bash
 nohup java -jar app.jar > app.log 2>&1 &
 ```
 
-这里实际涉及多个概念：
+这条命令实际上组合了多个 Shell 特性：
 
 ```text
 nohup
-→ 使程序忽略 SIGHUP 的默认终止行为
+→ 使程序忽略 SIGHUP
 
 &
-→ 告诉当前 Shell 将命令作为后台作业运行
+→ 让 Shell 将命令作为后台作业运行
 
 > app.log
-→ 将标准输出重定向到 app.log
+→ 重定向标准输出
 
 2>&1
 → 将标准错误重定向到标准输出
@@ -1564,34 +1491,826 @@ nohup
 因此：
 
 ```text
-nohup ≠ 后台运行
+nohup
+≠
+后台运行
 ```
 
-`&` 才是让 Shell 将命令放到后台执行的语法。
-
-`nohup` 解决的是：
+真正使命令进入后台的是：
 
 ```text
-终端 / Shell 退出
-→ 程序收到 SIGHUP
-→ 程序可能随之退出
+&
 ```
 
-的问题。
+而 `nohup` 主要解决的是终端退出后程序因收到 `SIGHUP` 而结束的问题。
 
-如果程序本身由 systemd 管理，更推荐直接使用 `systemctl`，而不是长期依赖 `nohup`。
+如果程序本身应该长期作为服务器服务运行，更推荐使用 `systemd` 管理。
 
 参考：[GNU Coreutils - `nohup`](https://www.gnu.org/software/coreutils/manual/html_node/nohup-invocation.html)
 
 ---
 
+## Shell 运算符
+
+Shell 中有一组非常重要的特殊语法，用于连接命令、重定向输入输出以及进行命令替换。
+
+本文重点介绍：
+
+```text
+-
+|
+`
+<
+<<
+<<<
+>
+>>
+```
+
+其中可以分成三类：
+
+```text
+管道
+→ |
+
+输入 / 输出重定向
+→ < << <<< > >>
+
+命令替换
+→ `command`
+```
+
+Bash 官方文档将这些功能分别归入 Pipelines、Redirections 和 Command Substitution。([Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html))
+
+### `-`：标准输入 / 输出中的特殊约定
+
+`-` 本身不是一个统一的 Shell 运算符，它通常作为**命令参数中的特殊文件名约定**使用。
+
+最常见的含义是：
+
+```text
+-
+→ 使用标准输入或标准输出
+```
+
+具体含义取决于命令本身。
+
+例如某些命令：
+
+```bash
+cat -
+```
+
+表示从标准输入读取内容。
+
+又例如：
+
+```bash
+tar -cf - app/
+```
+
+这里的 `-` 表示将归档数据写到标准输出。
+
+因此不能简单记成：
+
+```text
+- = 标准输入
+```
+
+更准确的是：
+
+```text
+-
+→ 许多 Unix 命令约定的“标准输入 / 标准输出”占位符
+→ 具体语义由命令决定
+```
+
+它与 `<`、`>` 这种由 Shell 直接解释的重定向符号不是同一类语法。
+
+---
+
+### `|`：管道
+
+```bash
+command1 | command2
+```
+
+管道会将：
+
+```text
+command1
+```
+
+的标准输出连接到：
+
+```text
+command2
+```
+
+的标准输入。
+
+例如：
+
+```bash
+ps -ef | grep java
+```
+
+执行过程可以理解为：
+
+```text
+ps -ef
+   │
+   │ stdout
+   ↓
+  pipe
+   ↓
+grep java
+   │
+   │ stdout
+   ↓
+终端
+```
+
+因此：
+
+```text
+|
+→ 前一个命令的 stdout
+→ 连接到后一个命令的 stdin
+```
+
+需要注意，默认情况下只有标准输出进入管道，标准错误仍然保持原来的去向。
+
+如果希望标准输出和标准错误一起进入管道，可以使用 Bash 的：
+
+```bash
+command1 |& command2
+```
+
+它等价于：
+
+```bash
+command1 2>&1 | command2
+```
+
+参考：[Bash Reference Manual - Pipelines](https://www.gnu.org/software/bash/manual/html_node/Pipelines.html)
+
+---
+
+### `>`：覆盖写入
+
+```bash
+command > file
+```
+
+将命令的标准输出重定向到文件。
+
+例如：
+
+```bash
+echo "hello" > test.txt
+```
+
+如果：
+
+```text
+test.txt
+```
+
+不存在，则创建文件。
+
+如果已经存在：
+
+```text
+原有内容
+↓
+被截断
+↓
+写入新的内容
+```
+
+因此：
+
+```text
+>
+→ 重定向 stdout
+→ 如果目标文件存在，默认先截断
+```
+
+参考：[Bash Reference Manual - Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+
+---
+
+### `>>`：追加写入
+
+```bash
+command >> file
+```
+
+与 `>` 不同，它不会清空原文件，而是将输出追加到文件末尾。
+
+例如：
+
+```bash
+echo "hello" >> app.log
+```
+
+再次执行：
+
+```bash
+echo "world" >> app.log
+```
+
+结果：
+
+```text
+hello
+world
+```
+
+因此：
+
+```text
+>
+→ 覆盖
+
+>>
+→ 追加
+```
+
+---
+
+### `<`：标准输入重定向
+
+```bash
+command < file
+```
+
+将：
+
+```text
+file
+```
+
+作为命令的标准输入。
+
+例如：
+
+```bash
+wc -l < app.log
+```
+
+这里：
+
+```text
+app.log
+→ stdin
+→ wc
+```
+
+与：
+
+```bash
+wc -l app.log
+```
+
+相比，后者是把 `app.log` 作为命令参数传给 `wc`。
+
+而 `<` 是由 Shell 把文件打开后连接到程序的标准输入。
+
+参考：[Bash Reference Manual - Redirecting Input](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+
+---
+
+### `<<`：Here Document
+
+```bash
+command << EOF
+内容
+EOF
+```
+
+`<<` 用于创建 **Here Document（Here 文档）**。
+
+Shell 会持续读取后续内容，直到遇到单独一行的结束标记。
+
+例如：
+
+```bash
+cat << EOF
+hello
+world
+EOF
+```
+
+相当于把：
+
+```text
+hello
+world
+```
+
+作为 `cat` 的标准输入。
+
+其中：
+
+```text
+EOF
+```
+
+只是一个常见的结束标记，并不是固定关键字，也可以使用：
+
+```text
+END
+DATA
+EOF
+```
+
+例如：
+
+```bash
+cat << END
+hello
+END
+```
+
+都可以。
+
+如果结束标记没有加引号：
+
+```bash
+cat << EOF
+Hello $USER
+EOF
+```
+
+其中的变量、命令替换等内容会按照 Bash 的规则进行展开。
+
+如果使用：
+
+```bash
+cat << 'EOF'
+Hello $USER
+EOF
+```
+
+则不会对 Here Document 的内容进行参数展开、命令替换等操作。
+
+参考：[Bash Reference Manual - Here Documents](https://www.gnu.org/software/bash/manual/html_node/Here-Documents.html)
+
+---
+
+### `<<<`：Here String
+
+```bash
+command <<< "string"
+```
+
+`<<<` 可以将一个字符串直接作为命令的标准输入。
+
+例如：
+
+```bash
+wc -c <<< "hello"
+```
+
+这里：
+
+```text
+"hello"
+→ stdin
+→ wc
+```
+
+Bash 会在字符串末尾额外添加一个换行符。
+
+因此：
+
+```bash
+command <<< "hello"
+```
+
+和：
+
+```bash
+printf '%s\n' "hello" | command
+```
+
+在常见场景下具有类似效果。
+
+`<<<` 是 Bash 提供的扩展，并不属于传统 POSIX `sh` 的标准语法。
+
+参考：[Bash Reference Manual - Here Strings](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+
+---
+
+### `` `command` ``：反引号命令替换
+
+例如：
+
+```bash
+echo `date`
+```
+
+Shell 会先执行：
+
+```bash
+date
+```
+
+然后将命令输出替换到原位置。
+
+可以理解为：
+
+```text
+`date`
+   ↓
+执行 date
+   ↓
+得到输出
+   ↓
+替换原来的 `date`
+```
+
+不过现代 Bash 更推荐：
+
+```bash
+echo $(date)
+```
+
+而不是：
+
+```bash
+echo `date`
+```
+
+原因是：
+
+```text
+$(...)
+```
+
+可读性更好，也更容易嵌套。
+
+例如：
+
+```bash
+echo $(basename $(pwd))
+```
+
+而反引号形式在嵌套时需要额外转义，复杂情况下可读性较差。
+
+Bash 官方文档也明确指出，`` `command` `` 是历史兼容形式，而 `$(command)` 是推荐形式。([Bash Reference Manual - Command Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html))
+
+---
+
+### `$(command)`：推荐的命令替换
+
+虽然本文主要讨论你原来的运算符，但实际使用中更推荐直接掌握：
+
+```bash
+$(command)
+```
+
+例如：
+
+```bash
+echo "Today is $(date)"
+```
+
+执行 `date`，然后将输出嵌入字符串中。
+
+常见用途：
+
+```bash
+cd "$(dirname "$file")"
+```
+
+或者：
+
+```bash
+files=$(find /tmp -type f)
+```
+
+需要注意，命令替换会去除命令输出末尾的换行符。
+
+另外，如果命令替换结果包含空格、通配符等内容，是否进行进一步的词拆分和路径展开还取决于是否使用引号。
+
+参考：[Bash Reference Manual - Command Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html)
+
+---
+
+## 文件描述符与重定向
+
+理解 `<`、`>`、`2>&1` 等语法之前，需要先知道 Linux 中最常见的三个文件描述符：
+
+```text
+0
+→ stdin
+→ 标准输入
+
+1
+→ stdout
+→ 标准输出
+
+2
+→ stderr
+→ 标准错误
+```
+
+因此：
+
+```bash
+command > app.log
+```
+
+实际上是：
+
+```bash
+command 1> app.log
+```
+
+而：
+
+```bash
+command < input.txt
+```
+
+实际上是：
+
+```bash
+command 0< input.txt
+```
+
+### `2>`：重定向标准错误
+
+```bash
+command 2> error.log
+```
+
+表示：
+
+```text
+stderr
+→ error.log
+```
+
+例如：
+
+```bash
+ls /not-exist 2> error.log
+```
+
+错误信息会写入：
+
+```text
+error.log
+```
+
+而正常输出仍然保持原来的位置。
+
+---
+
+### `2>&1`：将标准错误重定向到标准输出
+
+```bash
+command > app.log 2>&1
+```
+
+执行顺序：
+
+```text
+command > app.log
+→ stdout → app.log
+
+2>&1
+→ stderr → stdout 当前指向的位置
+→ app.log
+```
+
+最终：
+
+```text
+stdout → app.log
+stderr → app.log
+```
+
+这也是：
+
+```bash
+nohup java -jar app.jar > app.log 2>&1 &
+```
+
+中非常关键的一部分。
+
+需要注意：
+
+```text
+重定向是从左到右处理的
+```
+
+因此：
+
+```bash
+command > app.log 2>&1
+```
+
+和：
+
+```bash
+command 2>&1 > app.log
+```
+
+并不等价。
+
+第一种：
+
+```text
+stdout → app.log
+stderr → stdout → app.log
+```
+
+第二种执行时：
+
+```text
+stderr → 当前 stdout
+```
+
+此时 stdout 仍然指向终端。
+
+随后：
+
+```text
+stdout → app.log
+```
+
+因此 stderr 仍然会输出到终端。
+
+参考：[Bash Reference Manual - Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+
+---
+
+## Shell 运算符综合示例
+
+### 管道 + 文本搜索
+
+```bash
+ps -ef | grep java
+```
+
+```text
+ps
+→ 输出进程列表
+→ 管道
+→ grep
+→ 过滤 java
+```
+
+### 输出重定向
+
+```bash
+ls -lah > files.txt
+```
+
+```text
+ls
+→ stdout
+→ files.txt
+```
+
+### 追加日志
+
+```bash
+echo "server started" >> app.log
+```
+
+```text
+echo
+→ stdout
+→ 追加到 app.log
+```
+
+### 输入重定向
+
+```bash
+wc -l < app.log
+```
+
+```text
+app.log
+→ stdin
+→ wc
+```
+
+### 标准输出和错误一起写入日志
+
+```bash
+command > app.log 2>&1
+```
+
+```text
+stdout → app.log
+stderr → app.log
+```
+
+### Here Document
+
+```bash
+cat << EOF
+server:
+  port: 8080
+EOF
+```
+
+### Here String
+
+```bash
+grep "error" <<< "this is an error message"
+```
+
+### 命令替换
+
+```bash
+echo "Current time: $(date)"
+```
+
+---
+
+## 常见概念之间的关系
+
+Shell 命令执行时，通常会同时涉及：
+
+```text
+命令
++
+参数
++
+标准输入
++
+标准输出
++
+标准错误
++
+重定向
++
+管道
++
+命令替换
+```
+
+例如：
+
+```bash
+ps -ef | grep java > java.log 2>&1
+```
+
+可以拆解为：
+
+```text
+ps -ef
+   ↓
+stdout
+   ↓
+|
+   ↓
+grep java
+   ↓
+stdout → java.log
+
+stderr → java.log
+```
+
+再例如：
+
+```bash
+echo "$(date)" >> app.log
+```
+
+执行顺序可以理解为：
+
+```text
+$(date)
+→ 执行 date
+→ 得到时间字符串
+
+echo
+→ 输出字符串
+
+>>
+→ 追加到 app.log
+```
+
+掌握这些运算符之后，就能够理解大量 Linux 命令组合，而不是只能机械记忆单条命令。
+
+---
+
 ## 软件包管理
 
-CentOS 不同版本的软件包管理工具存在差异。
+CentOS 不同版本的软件包管理工具存在区别。
 
 ### CentOS 7：YUM
 
-CentOS 7 使用传统的：
+CentOS 7 使用：
 
 ```bash
 yum
@@ -1619,15 +2338,15 @@ dnf search nginx
 dnf update
 ```
 
-在 CentOS 8 等系统中仍然可以使用：
+CentOS 8 中仍然可以使用：
 
 ```bash
 yum
 ```
 
-因为此时 `yum` 已经成为基于 DNF 的兼容入口。
+因为 `yum` 已经成为基于 DNF 的兼容入口。
 
-因此可以简单理解为：
+因此：
 
 ```text
 CentOS 7
@@ -1660,7 +2379,7 @@ dnf
 systemctl
 ```
 
-假设服务名称为：
+假设服务名为：
 
 ```text
 myapp
@@ -1684,9 +2403,7 @@ systemctl stop myapp
 systemctl restart myapp
 ```
 
-会停止当前服务，然后再次启动。
-
-如果服务当前没有运行，`restart` 通常也会将其启动。
+停止当前服务后重新启动。
 
 ### 重新加载配置
 
@@ -1694,20 +2411,9 @@ systemctl restart myapp
 systemctl reload myapp
 ```
 
-请求服务重新加载配置。
+请求服务重新读取配置。
 
-前提是该服务本身实现了 reload 行为。
-
-`reload` 与 `restart` 的区别：
-
-```text
-reload
-→ 重新读取配置
-→ 通常不停止服务进程
-
-restart
-→ 停止并重新启动服务
-```
+前提是该服务实现了 reload 行为。
 
 ### 重新加载，否则重启
 
@@ -1715,15 +2421,13 @@ restart
 systemctl reload-or-restart myapp
 ```
 
-如果服务支持 reload：
+逻辑：
 
 ```text
+支持 reload
 → reload
-```
 
-否则：
-
-```text
+不支持 reload
 → restart
 ```
 
@@ -1733,23 +2437,11 @@ systemctl reload-or-restart myapp
 systemctl status myapp
 ```
 
-可以看到：
-
-```text
-服务是否运行
-主进程 PID
-启动时间
-进程状态
-最近日志
-```
-
 ### 设置开机启动
 
 ```bash
 systemctl enable myapp
 ```
-
-表示启用该 unit 的开机自动启动。
 
 取消：
 
@@ -1757,7 +2449,7 @@ systemctl enable myapp
 systemctl disable myapp
 ```
 
-同时启用并立即启动：
+立即启动并设置开机启动：
 
 ```bash
 systemctl enable --now myapp
@@ -1775,15 +2467,11 @@ systemctl enable --now myapp
 journalctl -u myapp
 ```
 
-`-u` 用于按照 systemd unit 过滤日志。
-
-### 实时查看日志
+### 实时查看
 
 ```bash
 journalctl -u myapp -f
 ```
-
-`-f` 表示持续跟踪新产生的日志。
 
 ### 查看今天的日志
 
@@ -1791,19 +2479,19 @@ journalctl -u myapp -f
 journalctl -u myapp --since today
 ```
 
-### 查看最近日志
+### 查看最近 100 条
 
 ```bash
 journalctl -u myapp -n 100
 ```
 
-查看最近 100 条日志记录。
-
-还可以直接结合 `systemctl status` 查看服务最近的一部分日志：
+还可以结合：
 
 ```bash
 systemctl status myapp
 ```
+
+一起排查服务问题。
 
 参考：[systemd `journalctl`](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html)
 
@@ -1819,7 +2507,7 @@ Linux 可以通过 **cron** 执行周期性任务。
 crontab -e
 ```
 
-### 查看当前用户的定时任务
+### 查看定时任务
 
 ```bash
 crontab -l
@@ -1833,11 +2521,12 @@ crontab -r
 
 注意：
 
-```bash
+```text
 crontab -r
+→ 删除当前用户整个 crontab
 ```
 
-删除的是当前用户的**整个 crontab**，不是某一条任务。
+不是只删除某一条任务。
 
 ### Cron 表达式
 
@@ -1865,22 +2554,10 @@ crontab -r
 /opt/scripts/backup.sh
 ```
 
-格式：
+例如：
 
 ```text
-┌──────── 分钟（0-59）
-│ ┌────── 小时（0-23）
-│ │ ┌──── 日期（1-31）
-│ │ │ ┌── 月份（1-12）
-│ │ │ │ ┌ 星期（0-7）
-│ │ │ │ │
-* * * * * command
-```
-
-`cron` 的字段支持范围、列表和步长等写法，例如：
-
-```text
-*/5 * * * *
+*/5 * * * * /opt/scripts/check.sh
 ```
 
 表示每 5 分钟执行一次。
@@ -1889,15 +2566,13 @@ crontab -r
 
 ## 系统时间
 
-服务器时间对于日志、认证、数据库以及分布式系统都非常重要。
+服务器时间对于日志、认证、数据库和分布式系统都非常重要。
 
-### `date`：查看当前系统时间
+### `date`：查看系统时间
 
 ```bash
 date
 ```
-
-查看当前系统时间。
 
 ### `timedatectl`：查看时间状态
 
@@ -1915,14 +2590,6 @@ Time zone
 System clock synchronized
 NTP service
 ```
-
-其中：
-
-```text
-System clock synchronized
-```
-
-可以帮助判断系统时钟是否已经完成同步。
 
 ### 设置系统时区
 
@@ -1944,19 +2611,15 @@ timedatectl set-timezone Asia/Tokyo
 系统时区
 ```
 
-而不是简单地“把 UTC 时间改成另一个时间”。
+不是简单地修改 UTC 时间。
 
 ### `chronyc sources`：查看时间源
-
-现代 RHEL/CentOS 系通常使用 **chrony** 进行 NTP 时间同步。
-
-查看时间源：
 
 ```bash
 chronyc sources
 ```
 
-可以看到当前配置的时间服务器以及各时间源的状态。
+查看当前配置的 NTP 时间源和状态。
 
 ### `chronyc tracking`：查看同步状态
 
@@ -1970,7 +2633,7 @@ chronyc tracking
 参考时间源
 Stratum
 系统时间偏移
-最近一次偏移
+最近偏移
 平均偏移
 频率调整
 网络延迟
@@ -1984,231 +2647,18 @@ Last offset
 RMS offset
 ```
 
-等字段可以帮助判断本机时钟与参考时间之间的偏差。
+等信息可以用于判断本机时钟与参考时间源之间的偏差。
 
 参考：[RHEL 9 - Configuring time synchronization](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_basic_system_settings/configuring-time-synchronization_configuring-basic-system-settings)
 
 ---
 
-## 常见命令组合
+## 官方文档
 
-### 查找 Java 进程
+深入学习 Linux 时，可以优先参考：
 
-```bash
-ps -ef | grep java
-```
-
-### 搜索日志中的错误
-
-```bash
-grep -n "ERROR" app.log
-```
-
-### 实时查看错误日志
-
-```bash
-tail -f app.log | grep ERROR
-```
-
-### 查找指定文件
-
-```bash
-find /opt -name "app.jar"
-```
-
-### 排查磁盘空间
-
-先查看文件系统：
-
-```bash
-df -h
-```
-
-再定位具体目录：
-
-```bash
-du -sh /var/*
-```
-
-### 排查服务
-
-先查看服务状态：
-
-```bash
-systemctl status myapp
-```
-
-再查看最近日志：
-
-```bash
-journalctl -u myapp -n 100
-```
-
-最后测试服务：
-
-```bash
-curl http://127.0.0.1:8080
-```
-
-可以形成一个比较典型的排障流程：
-
-```text
-服务状态
-   ↓
-服务日志
-   ↓
-进程状态
-   ↓
-端口 / 网络
-   ↓
-服务响应
-```
-
----
-
-## 基础操作中的几个核心概念
-
-### `Ctrl + C`、`Ctrl + Z`、`Ctrl + D`
-
-```text
-Ctrl + C
-→ SIGINT (2)
-→ 请求中断前台进程
-
-Ctrl + Z
-→ SIGTSTP
-→ 请求暂停前台进程
-
-Ctrl + D
-→ EOF
-→ 结束当前输入
-→ 在 Shell 中通常导致 Shell 退出
-```
-
-### `kill` 不是“强制杀进程”
-
-```bash
-kill PID
-```
-
-默认发送：
-
-```text
-SIGTERM (15)
-```
-
-而：
-
-```bash
-kill -9 PID
-```
-
-发送：
-
-```text
-SIGKILL (9)
-```
-
-通常应该：
-
-```text
-SIGTERM
-   ↓
-等待程序正常退出
-   ↓
-仍然无法退出
-   ↓
-考虑 SIGKILL
-```
-
-### `df` 和 `du`
-
-```text
-df
-→ 查看文件系统整体空间
-
-du
-→ 查看具体文件 / 目录占用
-```
-
-### `systemctl restart` 和 `reload`
-
-```text
-restart
-→ 停止并重新启动服务
-
-reload
-→ 请求服务重新读取配置
-→ 前提是服务支持 reload
-```
-
-### `yum` 和 `dnf`
-
-```text
-CentOS 7
-→ YUM 3
-
-CentOS 8+
-→ DNF
-→ yum 作为兼容入口
-```
-
-### `nohup` 和 `&`
-
-```text
-nohup
-→ 处理 SIGHUP
-
-&
-→ 后台运行
-```
-
-两者解决的问题不同。
-
----
-
-## 基础命令学习重点
-
-Linux 基础学习不需要一开始记住所有参数，更重要的是能够形成下面的操作思路：
-
-```text
-进入服务器
-    ↓
-确认当前用户和目录
-    ↓
-浏览文件系统
-    ↓
-创建 / 移动 / 删除文件
-    ↓
-查看和搜索文件内容
-    ↓
-理解用户和文件权限
-    ↓
-查看进程
-    ↓
-检查磁盘空间
-    ↓
-检查网络
-    ↓
-管理 systemd 服务
-    ↓
-查看服务日志
-    ↓
-配置定时任务
-    ↓
-检查系统时间
-```
-
-真正需要掌握的是：
-
-```text
-命令
-+
-参数
-+
-命令的实际语义
-+
-多个命令之间如何配合
-```
-
-当这些基础操作能够组合起来时，Linux 就不再只是“会几个命令”，而是能够真正用于服务器日常管理和故障排查。
+* [Bash Reference Manual](https://www.gnu.org/software/bash/manual/)
+* [GNU Coreutils](https://www.gnu.org/software/coreutils/manual/)
+* [Linux man-pages](https://man7.org/linux/man-pages/)
+* [Red Hat Enterprise Linux Documentation](https://docs.redhat.com/)
+* [systemd Documentation](https://www.freedesktop.org/wiki/Software/systemd/)
