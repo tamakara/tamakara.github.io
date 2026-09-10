@@ -1,7 +1,6 @@
 ---
 title: Linux 常用工具
 published: 2026-09-09
-updated: 2026-09-10
 image: ''
 tags: [Linux, 操作系统, 运维]
 category: 学习笔记
