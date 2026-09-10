@@ -5,6 +5,7 @@ image: ''
 tags: [Linux, 文件, 操作系统, 运维]
 category: 学习笔记
 ---
+
 > 本文以 **CentOS** 为主要环境，介绍 Linux 文件系统的基本目录结构，以及各目录在服务器运维中的主要作用。
 >
 > Linux 文件系统遵循 **FHS（Filesystem Hierarchy Standard，文件系统层次结构标准）** 所定义的目录组织原则。不过，不同发行版以及不同版本的具体实现可能存在差异，因此本文以 **CentOS / RHEL 系**的实际目录布局为主。[FHS 3.0 官方文档](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf)

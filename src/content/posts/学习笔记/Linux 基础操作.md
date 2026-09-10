@@ -5,6 +5,7 @@ image: ''
 tags: [Linux, 操作系统, 运维]
 category: 学习笔记
 ---
+
 > 本文以 **CentOS** 为主要环境，整理 Linux 日常使用和服务器管理中最基础的操作。
 >
 > 本文只介绍基础系统操作，不涉及需要额外安装的常用工具，例如 `tar`、`rsync`、`screen`、`nmap`、`sar`、`iostat`、`rz/sz` 等。
@@ -22,7 +23,7 @@ Bash 使用 GNU Readline 编辑交互式命令行，因此 `Ctrl + R`、`Ctrl + 
 ```text
 Ctrl + C
     ↓
-SIGINT (2)
+SIGINT
 ```
 
 `Ctrl + C` 会使终端驱动向当前前台进程组发送 `SIGINT`（Interrupt）信号。
@@ -45,15 +46,15 @@ Ctrl + C
 
 ```text
 Ctrl + C
-→ SIGINT (2)
+→ SIGINT
 
 kill PID
-→ 默认发送 SIGTERM (15)
+→ 默认发送 SIGTERM
 ```
 
 `SIGINT` 和 `SIGTERM` 都可以被进程捕获和处理，因此程序收到信号后可以执行自己的清理逻辑。
 
-参考：[Linux signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html)
+参考：[Linux `signal(7)`](https://man7.org/linux/man-pages/man7/signal.7.html)
 
 ### `Ctrl + Z`：发送 `SIGTSTP`
 
@@ -77,7 +78,7 @@ ping 127.0.0.1
 Ctrl + Z
 ```
 
-程序会进入 stopped 状态，而不是退出。
+程序会进入 `stopped` 状态，而不是退出。
 
 查看当前 Shell 管理的作业：
 
@@ -227,6 +228,7 @@ Linux 文件系统以：
 
 ```text
 绝对路径
+
 相对路径
 ```
 
@@ -250,10 +252,10 @@ Linux 文件系统以：
 特殊路径：
 
 ```text
-.     当前目录
-..    父目录
-~     当前用户的家目录
-/     根目录
+.    当前目录
+..   父目录
+~    当前用户的家目录
+/    根目录
 ```
 
 ### `pwd`：查看当前目录
@@ -279,10 +281,10 @@ cd /var/log
 常用：
 
 ```bash
-cd /       # 根目录
-cd ~       # 当前用户家目录
-cd ..      # 上一级目录
-cd -       # 上一次所在目录
+cd /        # 根目录
+cd ~        # 当前用户家目录
+cd ..       # 上一级目录
+cd -        # 上一次所在目录
 ```
 
 ### `ls`：查看目录内容
@@ -390,8 +392,7 @@ cp -r app /opt/
 
 ```text
 -r
-recursive
-递归复制
+→ recursive，递归复制
 ```
 
 ### `mv`：移动或重命名
@@ -412,7 +413,11 @@ mv old.txt new.txt
 
 在同一文件系统中移动文件时，通常只需要修改目录项；跨文件系统时则可能需要执行复制后删除。
 
-参考：[GNU Coreutils - `cp`](https://www.gnu.org/software/coreutils/manual/html_node/cp-invocation.html)、[GNU Coreutils - `mv`](https://www.gnu.org/software/coreutils/manual/html_node/mv-invocation.html)
+参考：
+
+[GNU Coreutils - `cp`](https://www.gnu.org/software/coreutils/manual/html_node/cp-invocation.html)
+
+[GNU Coreutils - `mv`](https://www.gnu.org/software/coreutils/manual/html_node/mv-invocation.html)
 
 ### `rm`：删除文件或目录
 
@@ -515,11 +520,17 @@ less app.log
 
 ```text
 ↑ / ↓       上下移动
+
 PageUp      向上翻页
+
 PageDown    向下翻页
+
 /keyword    搜索
+
 n           下一个匹配
+
 N           上一个匹配
+
 q           退出
 ```
 
@@ -834,7 +845,7 @@ export PATH=$PATH:/opt/java/bin
 
 ```text
 当前 Shell
-   ↓
+    ↓
 子进程 A
 子进程 B
 ```
@@ -863,6 +874,7 @@ Linux 用户和用户组是权限控制的重要组成部分。
 
 ```text
 所有者 User
+
 所属组 Group
 ```
 
@@ -1076,7 +1088,7 @@ chmod u+x script.sh
 → 可以创建、删除、重命名目录项
 
 目录 x
-→ 可以进入目录，并访问其中已知名称的对象
+→ 可以访问 / 穿过目录
 ```
 
 因此：
@@ -1086,6 +1098,207 @@ chmod u+x script.sh
 ```
 
 并不意味着用户可以正常访问目录中的所有文件。
+
+### 特殊权限
+
+除了：
+
+```text
+r
+w
+x
+```
+
+Linux 还提供了：
+
+```text
+SUID
+SGID
+Sticky Bit
+```
+
+对应的特殊权限位分别为：
+
+```text
+SUID
+→ 4xxx
+
+SGID
+→ 2xxx
+
+Sticky Bit
+→ 1xxx
+```
+
+### SUID
+
+SUID 主要用于**可执行文件**。
+
+当一个可执行文件设置了 SUID 后，普通用户执行该程序时，程序可以以**文件所有者的身份**运行。
+
+例如：
+
+```text
+文件所有者
+    ↓
+root
+
+普通用户执行程序
+    ↓
+程序以文件所有者身份运行
+```
+
+查看权限时，执行权限位置可能显示：
+
+```text
+-rwsr-xr-x
+```
+
+其中：
+
+```text
+s
+→ SUID
+```
+
+SUID 涉及权限提升，因此实际系统中需要谨慎使用。
+
+### SGID
+
+SGID 在文件和目录上的行为有所不同。
+
+对于可执行文件：
+
+```text
+SGID
+→ 程序以文件所属组的身份运行
+```
+
+对于目录：
+
+```text
+SGID 目录
+→ 在该目录中创建的新文件通常继承目录的所属组
+```
+
+因此 SGID 常用于多人协作目录。
+
+例如：
+
+```bash
+chmod 2775 /data/project
+```
+
+查看时可能看到：
+
+```text
+drwxrwsr-x
+```
+
+其中：
+
+```text
+s
+→ SGID
+```
+
+### Sticky Bit
+
+Sticky Bit 主要用于**允许多个用户写入的目录**。
+
+典型例子：
+
+```text
+/tmp
+```
+
+查看：
+
+```bash
+ls -ld /tmp
+```
+
+通常可以看到类似：
+
+```text
+drwxrwxrwt
+```
+
+最后的：
+
+```text
+t
+```
+
+表示设置了 Sticky Bit。
+
+它的作用可以理解为：
+
+```text
+目录允许用户创建文件
+        ↓
+普通用户不能随意删除或重命名其他用户创建的文件
+```
+
+因此在 `/tmp` 这种公共可写目录中，即使多个用户都拥有写权限，也不会因为目录本身可写，就可以随意删除其他用户的文件。
+
+可以简单理解：
+
+```text
+Sticky Bit
+
+→ 控制公共可写目录中的删除 / 重命名权限
+```
+
+### 特殊权限与普通权限的组合
+
+例如：
+
+```bash
+chmod 1777 /tmp/test
+```
+
+可以拆成：
+
+```text
+1
+→ Sticky Bit
+
+7
+→ User: rwx
+
+7
+→ Group: rwx
+
+7
+→ Other: rwx
+```
+
+最终可能显示为：
+
+```text
+drwxrwxrwt
+```
+
+因此看到权限末尾出现：
+
+```text
+t
+```
+
+或者执行位出现：
+
+```text
+s
+```
+
+时，需要想到它们不仅仅是普通的 `rwx` 权限，而是包含了特殊权限位。
+
+参考：
+
+[Red Hat - File permissions](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/managing_file_systems/managing-file-permissions_managing-file-systems)
+
+[Linux `chmod(1)`](https://man7.org/linux/man-pages/man1/chmod.1.html)
 
 ### `chown`：修改所有者
 
@@ -1230,7 +1443,7 @@ kill 1234
 默认发送：
 
 ```text
-SIGTERM (15)
+SIGTERM
 ```
 
 即请求进程正常终止。
@@ -1250,7 +1463,7 @@ kill -9 1234
 发送：
 
 ```text
-SIGKILL (9)
+SIGKILL
 ```
 
 `SIGKILL` 无法被进程捕获、忽略或处理，因此程序没有机会执行自己的清理逻辑。
@@ -1259,11 +1472,11 @@ SIGKILL (9)
 
 ```text
 SIGTERM
-   ↓
+    ↓
 等待正常退出
-   ↓
+    ↓
 仍未退出
-   ↓
+    ↓
 考虑 SIGKILL
 ```
 
@@ -1424,17 +1637,160 @@ wget
 
 ---
 
-## 远程文件复制
+## 远程操作
 
-### `scp`：通过 SSH 复制文件
+Linux 服务器管理中经常需要通过 SSH 远程连接服务器，并在远程主机上执行命令或传输文件。
 
-上传：
+### `ssh`：远程登录
+
+最基本的用法：
+
+```bash
+ssh user@server
+```
+
+例如：
+
+```bash
+ssh root@192.168.1.100
+```
+
+表示以 `root` 用户登录：
+
+```text
+本地终端
+    │
+    │ SSH
+    ↓
+远程服务器
+    │
+    ↓
+远程 Shell
+```
+
+指定端口：
+
+```bash
+ssh -p 2222 user@server
+```
+
+其中：
+
+```text
+-p
+→ 指定 SSH 服务端口
+```
+
+默认情况下，SSH 服务通常监听：
+
+```text
+22
+```
+
+因此：
+
+```bash
+ssh user@server
+```
+
+通常连接：
+
+```text
+server:22
+```
+
+### SSH 密钥认证
+
+SSH 除了密码认证，还可以使用公钥认证。
+
+本地生成密钥：
+
+```bash
+ssh-keygen
+```
+
+通常会生成：
+
+```text
+~/.ssh/id_ed25519
+~/.ssh/id_ed25519.pub
+```
+
+其中：
+
+```text
+id_ed25519
+→ 私钥
+
+id_ed25519.pub
+→ 公钥
+```
+
+需要注意：
+
+> 私钥应该由用户自己保存，不能随意泄露。
+
+将公钥配置到服务器后，可以使用密钥进行认证。
+
+常见的公钥位置：
+
+```text
+~/.ssh/authorized_keys
+```
+
+服务器上的 `sshd` 会根据该文件中的公钥判断是否允许对应的私钥完成认证。
+
+### `ssh`：远程执行命令
+
+SSH 不仅可以登录服务器，也可以直接执行远程命令：
+
+```bash
+ssh user@server "hostname"
+```
+
+例如：
+
+```bash
+ssh user@server "systemctl status myapp"
+```
+
+执行过程可以理解为：
+
+```text
+本地 Shell
+    │
+    │ ssh
+    ↓
+远程服务器
+    │
+    ↓
+执行命令
+    │
+    ↓
+输出结果返回本地终端
+```
+
+因此在运维场景中，经常可以使用 SSH 直接检查远程服务器：
+
+```bash
+ssh user@server "df -h"
+```
+
+```bash
+ssh user@server "ps -ef | grep java"
+```
+
+### `scp`：通过 SSH 传输文件
+
+`scp` 用于在本地与远程服务器之间复制文件。
+
+上传文件：
 
 ```bash
 scp app.jar user@server:/opt/app/
 ```
 
-下载：
+下载文件：
 
 ```bash
 scp user@server:/opt/app/app.jar ./
@@ -1452,10 +1808,77 @@ scp -r app user@server:/opt/
 scp 源 用户@主机:目标路径
 ```
 
-`scp` 使用 SSH 完成远程认证和数据传输。
+例如：
+
+```text
+本地文件
+   │
+   │ SCP
+   ↓
+远程服务器
+```
+
+`scp` 使用 SSH 提供的认证和安全传输能力。
+
+例如 SSH 使用非默认端口：
+
+```bash
+scp -P 2222 app.jar user@server:/opt/app/
+```
+
+这里需要注意：
+
+```text
+ssh
+→ -p 指定端口
+
+scp
+→ -P 指定端口
+```
+
+### `~/.ssh/config`：保存 SSH 连接配置
+
+当需要连接多个服务器时，可以通过：
+
+```text
+~/.ssh/config
+```
+
+保存连接配置。
+
+例如：
+
+```text
+Host myserver
+    HostName 192.168.1.100
+    User root
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+配置之后可以直接：
+
+```bash
+ssh myserver
+```
+
+而不需要每次重复输入：
+
+```bash
+ssh -p 2222 root@192.168.1.100
+```
+
+对于经常管理多台服务器的运维人员，这种配置非常实用。
+
+参考：
+
+[OpenSSH Manual Pages](https://man.openbsd.org/ssh)
+
+[ssh_config](https://man.openbsd.org/ssh_config)
+
+[scp](https://man.openbsd.org/scp)
 
 ---
-
 
 ## Shell 运算符
 
@@ -1472,11 +1895,15 @@ Shell 中有一组非常重要的特殊语法，用于连接命令、重定向�
 <<<
 >
 >>
+&
 ```
 
-其中可以分成三类：
+其中可以分成：
 
 ```text
+后台运行
+→ &
+
 管道
 → |
 
@@ -1487,7 +1914,9 @@ Shell 中有一组非常重要的特殊语法，用于连接命令、重定向�
 → `command`
 ```
 
-Bash 官方文档将这些功能分别归入 Pipelines、Redirections 和 Command Substitution。([Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html))
+Bash 官方文档将这些功能分别归入 Pipelines、Redirections、Job Control 和 Command Substitution。
+
+参考：[Bash Reference Manual](https://www.gnu.org/software/bash/manual/)
 
 ### `-`：标准输入 / 输出中的特殊约定
 
@@ -1510,14 +1939,6 @@ cat -
 
 表示从标准输入读取内容。
 
-又例如：
-
-```bash
-tar -cf - app/
-```
-
-这里的 `-` 表示将归档数据写到标准输出。
-
 因此不能简单记成：
 
 ```text
@@ -1529,12 +1950,11 @@ tar -cf - app/
 ```text
 -
 → 许多 Unix 命令约定的“标准输入 / 标准输出”占位符
+
 → 具体语义由命令决定
 ```
 
 它与 `<`、`>` 这种由 Shell 直接解释的重定向符号不是同一类语法。
-
----
 
 ### `|`：管道
 
@@ -1602,8 +2022,6 @@ command1 2>&1 | command2
 
 参考：[Bash Reference Manual - Pipelines](https://www.gnu.org/software/bash/manual/html_node/Pipelines.html)
 
----
-
 ### `>`：覆盖写入
 
 ```bash
@@ -1630,9 +2048,9 @@ test.txt
 
 ```text
 原有内容
-↓
+    ↓
 被截断
-↓
+    ↓
 写入新的内容
 ```
 
@@ -1641,12 +2059,11 @@ test.txt
 ```text
 >
 → 重定向 stdout
+
 → 如果目标文件存在，默认先截断
 ```
 
 参考：[Bash Reference Manual - Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
-
----
 
 ### `>>`：追加写入
 
@@ -1660,11 +2077,6 @@ command >> file
 
 ```bash
 echo "hello" >> app.log
-```
-
-再次执行：
-
-```bash
 echo "world" >> app.log
 ```
 
@@ -1684,8 +2096,6 @@ world
 >>
 → 追加
 ```
-
----
 
 ### `<`：标准输入重定向
 
@@ -1725,9 +2135,7 @@ wc -l app.log
 
 而 `<` 是由 Shell 把文件打开后连接到程序的标准输入。
 
-参考：[Bash Reference Manual - Redirecting Input](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
-
----
+参考：[Bash Reference Manual - Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
 
 ### `<<`：Here Document
 
@@ -1805,8 +2213,6 @@ EOF
 
 参考：[Bash Reference Manual - Here Documents](https://www.gnu.org/software/bash/manual/html_node/Here-Documents.html)
 
----
-
 ### `<<<`：Here String
 
 ```bash
@@ -1845,11 +2251,9 @@ printf '%s\n' "hello" | command
 
 在常见场景下具有类似效果。
 
-`<<<` 是 Bash 提供的扩展，并不属于传统 POSIX `sh` 的标准语法。
+`<<<` 是 Bash 提供的扩展，并不属于 POSIX `sh` 的标准语法。
 
 参考：[Bash Reference Manual - Here Strings](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
-
----
 
 ### `` `command` ``：反引号命令替换
 
@@ -1876,7 +2280,7 @@ date
    ↓
 得到输出
    ↓
-替换原来的 `date`
+替换原来的位置
 ```
 
 不过现代 Bash 更推荐：
@@ -1907,13 +2311,11 @@ echo $(basename $(pwd))
 
 而反引号形式在嵌套时需要额外转义，复杂情况下可读性较差。
 
-Bash 官方文档也明确指出，`` `command` `` 是历史兼容形式，而 `$(command)` 是推荐形式。([Bash Reference Manual - Command Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html))
-
----
+参考：[Bash Reference Manual - Command Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html)
 
 ### `$(command)`：推荐的命令替换
 
-虽然本文主要讨论你原来的运算符，但实际使用中更推荐直接掌握：
+实际使用中更推荐：
 
 ```bash
 $(command)
@@ -2016,8 +2418,6 @@ error.log
 
 而正常输出仍然保持原来的位置。
 
----
-
 ### `2>&1`：将标准错误重定向到标准输出
 
 ```bash
@@ -2041,14 +2441,6 @@ command > app.log
 stdout → app.log
 stderr → app.log
 ```
-
-这也是：
-
-```bash
-nohup java -jar app.jar > app.log 2>&1 &
-```
-
-中非常关键的一部分。
 
 需要注意：
 
@@ -2183,7 +2575,6 @@ bg %1
 
 ```text
 &
-
 → 让 Shell 在后台运行命令
 ```
 
@@ -2237,12 +2628,10 @@ nohup
 
 ```text
 &
-
 → 后台运行
 → 解决“当前 Shell 是否等待”
 
 nohup
-
 → 忽略 SIGHUP
 → 解决“终端退出后程序是否可能受到影响”
 ```
@@ -2281,23 +2670,18 @@ nohup java -jar app.jar > app.log 2>&1 &
 
 ```text
 nohup
-
 → 忽略 SIGHUP
 
 java -jar app.jar
-
 → 启动 Java 应用
 
 > app.log
-
 → 标准输出重定向到 app.log
 
 2>&1
-
 → 标准错误重定向到标准输出当前指向的位置
 
 &
-
 → 后台运行
 ```
 
@@ -2312,7 +2696,7 @@ java -jar app.jar
               │                         │
               ↓                         ↓
          app.log ←────────────── 2>&1
-                           
+
 nohup
   │
   └→ 忽略 SIGHUP
@@ -2347,6 +2731,8 @@ systemctl
 [Bash Reference Manual - Job Control](https://www.gnu.org/software/bash/manual/html_node/Job-Control.html)
 
 [GNU Coreutils - `nohup`](https://www.gnu.org/software/coreutils/manual/html_node/nohup-invocation.html)
+
+---
 
 ## 软件包管理
 

@@ -5,6 +5,7 @@ image: ''
 tags: [Vim, 文本编辑器, Linux, 操作系统, 运维]
 category: 学习笔记
 ---
+
 > 本文介绍 Linux 中常用的文本编辑器 **Vim**，以服务器上的配置文件、日志和代码编辑为主要使用场景。
 >
 > Vim 是 **Vi 的增强版**。`vi` 是 Unix 早期的经典文本编辑器，而 Vim（Vi IMproved）在兼容 Vi 基本操作的基础上增加了大量功能。Vim 官方文档也专门提供了 [Vi 与 Vim 的差异说明](https://vimhelp.org/vi_diff.txt.html)。
