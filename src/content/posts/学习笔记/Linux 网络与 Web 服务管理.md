@@ -6,9 +6,9 @@ tags: [Linux, 网络, Nginx, Apache, Tomcat, Kafka, 防火墙, 运维]
 category: 学习笔记
 ---
 
-> 本文以 RHEL / CentOS Stream 为主要环境，整理 Linux 服务器中网络管理、防火墙、Web 服务和常见中间件的基础知识与运维方法。
+> 本文以 RHEL / CentOS Stream 为主要环境，整理 Linux 服务器中的网络管理、防火墙、Web 服务以及常见中间件。
 >
-> 内容重点放在“**服务是怎么运行的、网络请求是怎么进入服务器的、不同组件如何协作，以及出现问题时应该从哪里排查**”。
+> 内容重点放在实际运维中经常遇到的服务部署、网络访问、防火墙规则、Nginx 配置、反向代理、缓存、负载均衡，以及 Web 服务故障排查。
 
 ## Linux 网络与服务管理概览
 
@@ -64,9 +64,9 @@ Linux 服务器上的网络服务并不是孤立存在的。
 
 ---
 
-## Linux 网络管理
+# Linux 网络管理
 
-### 网络接口、IP 与路由
+## 网络接口、IP 与路由
 
 Linux 中最基础的网络管理对象包括：
 
@@ -123,7 +123,7 @@ default via 192.168.1.1 dev eth0
 - 访问其他网络时默认交给 `192.168.1.1`
 - 数据包从 `eth0` 发出
 
-### 端口与网络连接
+## 端口与网络连接
 
 IP 地址解决的是：
 
@@ -161,7 +161,7 @@ LISTEN 0 128 127.0.0.1:8080
 
 例如任何程序都可以监听 `8080`，端口只是操作系统提供给网络服务进行通信的编号。
 
-### 网络连通性与路径排查
+## 网络连通性与路径排查
 
 基础排查通常按照：
 
@@ -214,9 +214,9 @@ tcpdump -i eth0 port 80
 
 ---
 
-## Linux 防火墙
+# Linux 防火墙
 
-### 防火墙到底在做什么
+## 防火墙到底在做什么
 
 防火墙本质上是在网络数据包经过主机时，根据规则判断：
 
@@ -258,9 +258,9 @@ tcpdump -i eth0 port 80
 
 ---
 
-## iptables 与 Netfilter
+# iptables 与 Netfilter
 
-### Netfilter 是什么
+## Netfilter 是什么
 
 `iptables` 并不是 Linux 内核中的防火墙本身。
 
@@ -283,15 +283,15 @@ Linux Kernel
       iptables
 ```
 
-Netfilter 官方说明中，iptables 是用于定义规则集的传统工具，而 nftables 是其后继体系。
+Netfilter 是 Linux 内核网络数据包处理框架，而 iptables 是传统的规则管理工具。
 
-### iptables 四表五链
+## iptables 四表五链
 
 iptables 最经典的知识点就是：
 
 > **四表五链**
 
-#### 四张表
+### 四张表
 
 | 表 | 主要用途 | 典型场景 |
 |---|---|---|
@@ -320,7 +320,7 @@ nat
 
 > **数据包的地址和端口是否需要转换？**
 
-#### 五条链
+### 五条链
 
 | Chain | 作用 |
 |---|---|
@@ -330,11 +330,11 @@ nat
 | `OUTPUT` | 本机产生的数据包 |
 | `POSTROUTING` | 数据包准备离开网络栈 |
 
-### 数据包经过 iptables 的路径
+## 数据包经过 iptables 的路径
 
 理解“四表五链”最重要的并不是死记，而是理解数据包路径。
 
-#### 发往本机
+### 发往本机
 
 ```text
 网卡
@@ -352,7 +352,7 @@ INPUT
 本机应用
 ```
 
-#### 本机转发
+### 本机转发
 
 ```text
 网卡
@@ -373,7 +373,7 @@ POSTROUTING
 网卡
 ```
 
-#### 本机主动发送
+### 本机主动发送
 
 ```text
 本机应用
@@ -396,9 +396,8 @@ POSTROUTING
 **链描述数据包所处的位置，表描述规则的功能。**
 
 因此“表”和“链”是两个不同维度。
-:::
 
-### iptables 规则
+## iptables 规则
 
 一个基本规则可以写成：
 
@@ -437,7 +436,7 @@ iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 | `DNAT` | 目标地址转换 |
 | `SNAT` | 源地址转换 |
 
-### DROP 与 REJECT
+## DROP 与 REJECT
 
 两者都可以阻止连接，但行为不同。
 
@@ -462,27 +461,13 @@ REJECT
 
 ---
 
-## iptables 中的 NAT
+# NAT
 
-NAT 是防火墙体系中非常重要的一部分。
+NAT 是网络地址转换机制，在 Linux 防火墙体系中通常通过 Netfilter 相关机制实现。
 
-最常见的是：
+## SNAT
 
-```text
-内网主机
-192.168.1.100
-     │
-     ▼
-NAT 网关
-203.0.113.10
-     │
-     ▼
-Internet
-```
-
-### SNAT
-
-修改：
+SNAT 修改：
 
 ```text
 源地址
@@ -500,9 +485,9 @@ Internet
 
 > 内网主机访问公网。
 
-### DNAT
+## DNAT
 
-修改：
+DNAT 修改：
 
 ```text
 目标地址
@@ -524,9 +509,9 @@ Internet
 
 ---
 
-## firewalld
+# firewalld
 
-### 为什么有了 iptables 还需要 firewalld
+## 为什么有了 iptables 还需要 firewalld
 
 iptables 的问题并不是能力不足，而是：
 
@@ -547,9 +532,9 @@ firewalld
 nftables / Netfilter
 ```
 
-在现代 RHEL 中，firewalld 与 nftables 是主要的防火墙管理体系；对于复杂、高性能的场景，也可以直接使用 nftables。
+在现代 RHEL 系统中，firewalld 是常见的主机防火墙管理工具，而 nftables 是现代 Linux 防火墙规则体系的重要组成部分。
 
-### Zone
+## Zone
 
 firewalld 最核心的概念之一是：
 
@@ -580,7 +565,7 @@ block
     HTTP/HTTPS    内部服务       高信任
 ```
 
-### 开放服务与端口
+## 开放服务与端口
 
 firewalld 可以直接按照服务管理：
 
@@ -608,12 +593,12 @@ firewalld 将运行时配置和永久配置分开管理，因此临时修改与�
 
 > **把自己的 SSH 连接一起封掉。**
 
-因此修改远程主机防火墙时，应始终先确认管理连接和备用访问方式。
+修改远程服务器防火墙时，应先确认管理连接和备用访问方式。
 :::
 
 ---
 
-## nftables 与现代 Linux 防火墙
+# nftables
 
 现代 Linux 防火墙体系可以理解为：
 
@@ -630,11 +615,11 @@ firewalld 将运行时配置和永久配置分开管理，因此临时修改与�
                  内核网络栈
 ```
 
-需要特别注意：
+需要注意：
 
 > **学习 iptables 依然非常重要，因为“四表五链”是理解 Linux 防火墙历史与网络数据包处理流程的经典知识。**
 
-但在较新的 RHEL 系统中，iptables 传统框架已经不再是推荐的新防火墙配置模型。
+但实际使用现代 RHEL 系统时，应同时了解 nftables 与 firewalld。
 
 因此学习顺序可以是：
 
@@ -648,7 +633,7 @@ firewalld
 nftables
 ```
 
-这样既能应对传统面试题，也能理解现代 Linux。
+这样既能掌握经典知识，也能理解现代 Linux 防火墙体系。
 
 ---
 
@@ -664,8 +649,8 @@ nftables
 | Apache HTTP Server | Web Server | HTTP、虚拟主机、模块化扩展 |
 | Tomcat | Servlet 容器 / Java Web 容器 | 执行 Java Web 应用 |
 | Spring Boot | Java 应用框架 | 实际业务逻辑 |
-| Kafka | 消息与事件流平台 | 异步通信、消息传递 |
 | Redis | 内存数据存储 | 缓存、Session、计数等 |
+| Kafka | 消息 / 事件流平台 | 异步通信、事件处理 |
 | RabbitMQ | 消息代理 | 消息队列、异步通信 |
 
 一个常见系统架构：
@@ -688,15 +673,15 @@ Tomcat :8080
   └──────► MySQL :3306
 ```
 
-这也是 Linux 运维中最常见的一类服务组合。
+这也是 Linux 运维中非常常见的一类服务组合。
 
 ---
 
-## Nginx
+# Nginx
 
-### Nginx 是什么
+## Nginx 是什么
 
-Nginx 是高性能的 Web 服务器和反向代理服务器。
+Nginx 是常见的 Web 服务器和反向代理服务器。
 
 它的典型用途包括：
 
@@ -705,11 +690,12 @@ Nginx 是高性能的 Web 服务器和反向代理服务器。
 - 反向代理
 - 负载均衡
 - TLS 终止
+- HTTP 缓存
 - 请求转发
 
-Nginx 采用 master/worker 进程模型，由 master 管理配置和 worker，worker 实际处理请求。
+Nginx 采用 master / worker 进程模型，由 master 管理配置和 worker，worker 实际处理请求。
 
-### Nginx 进程模型
+## Nginx 进程模型
 
 ```text
                  Master
@@ -773,7 +759,7 @@ nginx -t
 systemctl reload nginx
 ```
 
-### start、restart、reload 的区别
+## start、restart、reload 的区别
 
 | 操作 | 含义 |
 |---|---|
@@ -782,20 +768,20 @@ systemctl reload nginx
 | `restart` | 停止后重新启动 |
 | `reload` | 重新读取配置，尽量不中断已有连接 |
 
-修改 Nginx 配置时，优先使用：
+修改 Nginx 配置时，通常可以：
 
 ```bash
 nginx -t
 systemctl reload nginx
 ```
 
-而不是每次直接 `restart`。
+这样可以先检查配置语法，再重新加载配置。
 
 ---
 
-## Nginx 配置结构
+# Nginx 配置结构
 
-Nginx 配置核心是：
+Nginx 配置核心结构可以理解为：
 
 ```text
 nginx.conf
@@ -825,7 +811,7 @@ http {
 }
 ```
 
-这里可以理解成：
+可以理解成：
 
 ```text
 http
@@ -835,13 +821,22 @@ http
       └── location
 ```
 
-### server
+## server
 
 表示一个虚拟服务器。
 
-### location
+常见配置：
 
-决定某个 URL 路径应该如何处理。
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+}
+```
+
+## location
+
+决定某个 URL 路径如何处理。
 
 例如：
 
@@ -851,7 +846,7 @@ location /static/ {
 }
 ```
 
-### upstream
+## upstream
 
 用于定义后端服务器组。
 
@@ -864,9 +859,9 @@ upstream backend {
 
 ---
 
-## Nginx 静态资源服务
+# Nginx 静态资源管理
 
-最简单的 Nginx 用途就是：
+Nginx 最简单的用途就是直接提供静态文件。
 
 ```text
 浏览器
@@ -898,13 +893,123 @@ server {
 }
 ```
 
+这种方式特别适合：
+
+- HTML
+- CSS
+- JavaScript
+- 图片
+- 字体
+- 前端构建产物
+
 ---
 
-## 反向代理
+# HTTP 状态码
 
-### 正向代理与反向代理
+HTTP 状态码是 Web 服务运维中必须掌握的内容。
 
-#### 正向代理
+一个 HTTP 响应通常包含：
+
+```text
+HTTP/1.1 200 OK
+Content-Type: text/html
+
+<html>...</html>
+```
+
+其中：
+
+```text
+200
+```
+
+就是状态码。
+
+## 状态码分类
+
+| 类别 | 含义 | 说明 |
+|---|---|---|
+| `1xx` | Informational | 信息响应，表示请求已经收到并继续处理 |
+| `2xx` | Success | 请求成功 |
+| `3xx` | Redirection | 需要进一步操作或重定向 |
+| `4xx` | Client Error | 请求存在问题 |
+| `5xx` | Server Error | 服务端处理失败 |
+
+## 常见状态码
+
+| 状态码 | 含义 | 常见场景 |
+|---|---|---|
+| `200 OK` | 请求成功 | 正常页面、API 响应 |
+| `201 Created` | 创建成功 | 创建用户、创建资源 |
+| `202 Accepted` | 请求已接受 | 异步任务 |
+| `204 No Content` | 成功但无响应内容 | DELETE、部分更新接口 |
+| `301 Moved Permanently` | 永久重定向 | 域名迁移、HTTP → HTTPS |
+| `302 Found` | 临时重定向 | 登录跳转等 |
+| `304 Not Modified` | 资源未修改 | 浏览器缓存 |
+| `307 Temporary Redirect` | 临时重定向 | 保留原请求方法 |
+| `308 Permanent Redirect` | 永久重定向 | 保留原请求方法 |
+| `400 Bad Request` | 请求错误 | 参数格式错误 |
+| `401 Unauthorized` | 未认证 | 缺少有效身份认证 |
+| `403 Forbidden` | 禁止访问 | 权限不足 |
+| `404 Not Found` | 资源不存在 | URL 错误、文件不存在 |
+| `405 Method Not Allowed` | 方法不允许 | GET 接口使用 POST 等 |
+| `408 Request Timeout` | 请求超时 | 请求未及时完成 |
+| `409 Conflict` | 请求冲突 | 资源状态冲突 |
+| `413 Content Too Large` | 请求内容过大 | 上传文件过大 |
+| `429 Too Many Requests` | 请求过多 | 限流 |
+| `500 Internal Server Error` | 服务端内部错误 | 程序异常 |
+| `501 Not Implemented` | 未实现 | 服务器不支持该功能 |
+| `502 Bad Gateway` | 网关错误 | 上游服务异常 |
+| `503 Service Unavailable` | 服务不可用 | 服务停机、过载、维护 |
+| `504 Gateway Timeout` | 网关超时 | 上游响应超时 |
+
+## 4xx 与 5xx
+
+这是 Web 服务排查中非常重要的一组区别。
+
+```text
+4xx
+ ↓
+请求已经到达服务端
+但请求本身存在问题
+```
+
+例如：
+
+```text
+400
+401
+403
+404
+405
+```
+
+而：
+
+```text
+5xx
+ ↓
+服务端在处理请求时发生问题
+```
+
+例如：
+
+```text
+500
+502
+503
+504
+```
+
+不过这并不意味着所有 4xx 都是“用户写错了”，或者所有 5xx 都一定由应用代码直接产生。
+
+---
+
+# Nginx 与反向代理
+
+## 正向代理与反向代理
+
+### 正向代理
 
 客户端知道自己在访问代理：
 
@@ -922,7 +1027,7 @@ Internet
 
 > 客户端通过代理访问外部资源。
 
-#### 反向代理
+### 反向代理
 
 客户端并不知道后面的真实服务器：
 
@@ -949,8 +1054,6 @@ https://example.com/api/users
 ```
 
 客户端访问的是 Nginx，Nginx 再把请求转发给后端。
-
----
 
 ## Nginx 反向代理
 
@@ -1001,11 +1104,11 @@ Nginx
        应用服务器
 ```
 
-于是应用服务器不需要直接暴露在公网。
+于是应用服务器不需要直接暴露给公网。
 
 ---
 
-## 动静分离
+# Nginx 动静分离
 
 “动静分离”本质上就是：
 
@@ -1051,7 +1154,206 @@ location /api/ {
 
 ---
 
-## Nginx 负载均衡
+# Nginx 缓存
+
+Nginx 的缓存可以从两个角度理解：
+
+```text
+                    Nginx
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+      HTTP缓存控制             服务端缓存
+          │                       │
+      浏览器缓存             proxy_cache
+      协商缓存               fastcgi_cache
+```
+
+## HTTP 缓存控制
+
+Nginx 可以通过 HTTP 响应头告诉浏览器：
+
+> 这个资源是否可以缓存，以及缓存多久。
+
+例如：
+
+```nginx
+location ~* \.(jpg|jpeg|png|gif|css|js)$ {
+    expires 7d;
+    add_header Cache-Control "public";
+}
+```
+
+服务器可以返回：
+
+```http
+Cache-Control: public
+Expires: ...
+```
+
+浏览器之后再次访问相同资源时，可以优先使用本地缓存。
+
+## 常见缓存相关 Header
+
+| Header | 作用 |
+|---|---|
+| `Cache-Control` | 控制缓存行为 |
+| `Expires` | 指定缓存过期时间 |
+| `ETag` | 标识资源版本 |
+| `Last-Modified` | 表示资源最后修改时间 |
+| `If-None-Match` | 根据 ETag 判断资源是否变化 |
+| `If-Modified-Since` | 根据修改时间判断资源是否变化 |
+
+### ETag 与 304
+
+第一次请求：
+
+```text
+浏览器
+   │
+   ▼
+服务器
+   │
+   ├── ETag: "abc123"
+   └── Cache-Control: max-age=3600
+   │
+   ▼
+浏览器缓存
+```
+
+浏览器再次请求时：
+
+```http
+If-None-Match: "abc123"
+```
+
+如果资源没有变化：
+
+```http
+304 Not Modified
+```
+
+此时服务器无需重新传输完整资源，浏览器继续使用本地缓存。
+
+:::tip
+`304 Not Modified` 并不是请求失败。
+
+它表示：
+
+> **服务器判断资源没有变化，可以继续使用客户端缓存。**
+:::
+
+---
+
+## Nginx 代理缓存
+
+Nginx 还可以把**后端服务器返回的 HTTP 响应缓存下来**。
+
+例如：
+
+```text
+Client
+   │
+   ▼
+Nginx
+   │
+   ├── 缓存命中 ──────► 直接返回
+   │
+   └── 缓存未命中
+             │
+             ▼
+          Tomcat
+             │
+             ▼
+          Nginx缓存
+             │
+             ▼
+           Client
+```
+
+基本配置：
+
+```nginx
+proxy_cache_path /var/cache/nginx
+    levels=1:2
+    keys_zone=my_cache:10m
+    max_size=1g
+    inactive=60m
+    use_temp_path=off;
+
+server {
+    location /api/ {
+        proxy_cache my_cache;
+        proxy_pass http://backend;
+    }
+}
+```
+
+核心指令：
+
+| 指令 | 作用 |
+|---|---|
+| `proxy_cache_path` | 定义缓存目录和缓存区域 |
+| `proxy_cache` | 指定使用的缓存区域 |
+| `proxy_cache_valid` | 指定不同状态码的缓存时间 |
+| `proxy_cache_key` | 定义缓存键 |
+| `proxy_cache_bypass` | 满足条件时绕过缓存 |
+| `proxy_no_cache` | 满足条件时不保存响应 |
+
+例如：
+
+```nginx
+proxy_cache_valid 200 10m;
+proxy_cache_valid 404 1m;
+```
+
+表示：
+
+```text
+200 → 缓存 10 分钟
+404 → 缓存 1 分钟
+```
+
+## FastCGI 缓存
+
+如果后端使用 FastCGI，Nginx 还可以使用：
+
+```text
+fastcgi_cache
+```
+
+例如：
+
+```text
+Client
+  │
+  ▼
+Nginx
+  │
+  ▼
+PHP-FPM
+```
+
+可以通过 FastCGI Cache 对动态页面进行缓存。
+
+因此 Nginx 的缓存体系可以简单理解为：
+
+| 缓存类型 | 缓存位置 | 典型用途 |
+|---|---|---|
+| 浏览器缓存 | 客户端 | CSS、JS、图片等静态资源 |
+| 代理缓存 | Nginx | 后端 HTTP 响应 |
+| FastCGI 缓存 | Nginx | FastCGI 动态页面 |
+| 应用缓存 | 应用 / Redis | 业务数据 |
+
+:::important
+**HTTP 缓存控制**和**Nginx 服务端缓存**不是同一个概念。
+
+前者主要通过 HTTP Header 控制客户端或缓存代理如何使用资源；后者则是 Nginx 自己保存后端响应。
+:::
+
+---
+
+# Nginx 负载均衡
 
 当一个 Tomcat 已经不足以处理所有请求时，可以增加多个实例：
 
@@ -1082,9 +1384,7 @@ server {
 }
 ```
 
-Nginx 支持多种 HTTP 负载均衡机制，包括轮询、最少连接以及基于权重的方式。
-
-### 常见负载均衡方式
+## 常见负载均衡方式
 
 | 方式 | 思路 |
 |---|---|
@@ -1101,9 +1401,20 @@ server B weight=1
 
 表示 A 的请求分配权重高于 B。
 
+当后端节点越来越多时，还需要进一步考虑：
+
+- 健康检查
+- 会话保持
+- 节点故障摘除
+- 超时
+- 重试
+- 连接数
+
+因此“负载均衡”并不只是简单地把请求平均分给几个服务器。
+
 ---
 
-## HTTPS 与 TLS 终止
+# HTTPS 与 TLS 终止
 
 常见生产架构是：
 
@@ -1121,7 +1432,7 @@ Tomcat
 
 也就是说：
 
-> TLS 加密在 Nginx 终止。
+> TLS 加密可以在 Nginx 处终止。
 
 Nginx 负责：
 
@@ -1139,6 +1450,163 @@ Tomcat
 ```
 
 这样后端应用可以专注于业务逻辑，而不用每个实例都单独处理公网 TLS。
+
+---
+
+# Nginx 日志
+
+Web 服务故障排查离不开日志。
+
+Nginx 常见日志分为：
+
+```text
+access.log
+error.log
+```
+
+## Access Log
+
+访问日志主要记录：
+
+- 客户端地址
+- 请求方法
+- URL
+- HTTP 状态码
+- 响应大小
+- User-Agent
+- Referer
+- 请求耗时等
+
+典型：
+
+```text
+192.168.1.10 - - [12/Sep/2026:12:00:00 +0800]
+"GET /api/user HTTP/1.1"
+200
+1024
+```
+
+它适合回答：
+
+> **谁访问了什么、什么时候访问、返回了什么状态码。**
+
+## Error Log
+
+错误日志用于记录 Nginx 处理请求过程中的异常。
+
+例如：
+
+```text
+connect() failed (111: Connection refused)
+while connecting to upstream
+```
+
+这类日志往往可以直接帮助定位：
+
+```text
+Nginx
+   │
+   X────► 上游服务
+```
+
+也就是 Nginx 无法连接后端。
+
+---
+
+# HTTP 502、503、504
+
+这三个状态码在 Nginx 反向代理环境中特别重要。
+
+## 502 Bad Gateway
+
+通常表示：
+
+> **Nginx 作为网关，从上游服务获得了无效的响应，或者无法正常与上游通信。**
+
+常见情况：
+
+```text
+Nginx
+  │
+  X────► Tomcat
+```
+
+例如：
+
+- Tomcat 没启动
+- 上游地址错误
+- 上游端口错误
+- 连接被拒绝
+- 上游服务异常
+
+因此遇到 502，可以重点检查：
+
+```text
+Nginx
+ ↓
+proxy_pass
+ ↓
+目标 IP / 端口
+ ↓
+Tomcat
+```
+
+## 503 Service Unavailable
+
+通常表示：
+
+> **当前服务暂时无法处理请求。**
+
+可能与：
+
+- 服务停机
+- 服务过载
+- 维护状态
+- 后端暂时不可用
+
+有关。
+
+## 504 Gateway Timeout
+
+重点是：
+
+> **Nginx 等待上游服务响应超时。**
+
+例如：
+
+```text
+Client
+   │
+   ▼
+Nginx
+   │
+   │ 等待
+   │
+   ▼
+Tomcat
+   │
+   └─────── 长时间没有响应
+```
+
+此时重点检查：
+
+```text
+Nginx
+   ↓
+网络连接
+   ↓
+Tomcat
+   ↓
+Java Application
+   ↓
+数据库 / Redis / Kafka
+```
+
+:::warning
+看到 `502`、`503`、`504` 时，不应该简单地认为“**Nginx 出问题了**”。
+
+Nginx 很可能只是**把上游服务的问题表现成 HTTP 错误返回给客户端**。
+:::
 
 ---
 
@@ -1166,8 +1634,6 @@ Apache 官方文档提供了：
 
 等完整内容。
 
----
-
 ## Apache 核心概念
 
 Apache 最大的特点之一是：
@@ -1187,8 +1653,6 @@ Apache
 ```
 
 其中 `mod_proxy` 可以提供代理和网关能力，并支持负载均衡相关功能。
-
----
 
 ## Apache 安装与管理
 
@@ -1222,7 +1686,7 @@ systemctl status httpd
 
 ---
 
-## Apache 虚拟主机
+# Apache 虚拟主机
 
 当一台服务器上运行多个网站时，可以使用 Virtual Host：
 
@@ -1243,7 +1707,7 @@ systemctl status httpd
 </VirtualHost>
 ```
 
-Apache 支持基于 IP 和基于名称的虚拟主机，其中现代 Web 部署更常见的是基于域名的 Name-based Virtual Host。
+Apache 支持基于 IP 和基于名称的虚拟主机，其中实际 Web 部署更常见的是基于域名的 Name-based Virtual Host。
 
 ---
 
@@ -1278,8 +1742,6 @@ Tomcat
 Spring / Servlet Application
 ```
 
----
-
 ## Tomcat 核心结构
 
 Tomcat 的结构可以简化为：
@@ -1293,14 +1755,14 @@ Server
                └── Context
 ```
 
-官方 Tomcat 文档中：
+可以简单理解为：
 
-- `Server` 是顶层容器
-- `Service` 将 Connector 与 Engine 组合在一起
-- `Connector` 负责与外部客户端通信
-- `Engine` 负责处理请求
-- `Host` 表示虚拟主机
-- `Context` 对应具体 Web 应用
+- `Server`：顶层容器
+- `Service`：组织 Connector 和 Engine
+- `Connector`：负责网络通信
+- `Engine`：处理请求
+- `Host`：虚拟主机
+- `Context`：具体 Web 应用
 
 ### Connector
 
@@ -1339,9 +1801,9 @@ Context 对应具体 Web 应用。
 
 ---
 
-## Tomcat 部署
+# Tomcat 部署
 
-Tomcat 常见方式是：
+Tomcat 常见部署关系是：
 
 ```text
 JDK
@@ -1369,7 +1831,7 @@ bin/startup.sh
 ps -ef | grep tomcat
 ```
 
-默认情况下，Tomcat HTTP Connector 常见监听：
+Tomcat HTTP Connector 常见监听：
 
 ```text
 8080
@@ -1415,7 +1877,7 @@ systemctl status nginx
 systemctl is-enabled nginx
 ```
 
-### 日志
+## 服务日志
 
 systemd 管理的服务通常可以通过：
 
@@ -1489,8 +1951,6 @@ Web
 
 > Middleware，中间件。
 
----
-
 ## 常见中间件分类
 
 | 类型 | 典型组件 | 主要用途 |
@@ -1520,9 +1980,7 @@ Redis
 应用
 ```
 
-### 常见用途
-
-#### 缓存
+## 缓存
 
 ```text
 请求
@@ -1538,7 +1996,7 @@ Redis
      MySQL
 ```
 
-#### Session
+## Session
 
 多个应用实例共享 Session：
 
@@ -1561,7 +2019,7 @@ Kafka 更准确地说是：
 
 > **分布式事件流平台。**
 
-Kafka 官方文档将其用于读取、写入、存储和处理事件；事件被组织到 Topic 中，并由 Broker 持久化保存。
+Kafka 用于读取、写入、存储和处理事件，事件被组织到 Topic 中，并由 Broker 持久化保存。
 
 典型模型：
 
@@ -1577,8 +2035,6 @@ Producer
  ▼            ▼
 Consumer A  Consumer B
 ```
-
----
 
 ## Kafka 核心概念
 
@@ -1654,7 +2110,7 @@ Producer
 
 ---
 
-## Kafka 与传统消息队列
+# Kafka 与传统消息队列
 
 Kafka 与 RabbitMQ 都可以做消息异步处理，但设计思路不同。
 
@@ -1693,8 +2149,6 @@ Kafka 更适合：
 ---
 
 # Kafka 基本部署思路
-
-现代 Kafka 使用 KRaft 架构进行集群元数据管理。
 
 Kafka 服务通常依赖 Java 环境。
 
@@ -1800,7 +2254,7 @@ Internet
         └── MySQL :3306
 ```
 
-这种架构中，可以形成非常明确的安全边界：
+这种架构中，可以形成比较清晰的安全边界：
 
 ```text
 公网
@@ -1837,7 +2291,7 @@ https://example.com
 
 可以沿着请求链逐层排查。
 
-## 第一层：DNS
+## DNS
 
 ```text
 域名
@@ -1845,7 +2299,7 @@ https://example.com
 是否解析到正确 IP？
 ```
 
-## 第二层：网络
+## 网络
 
 ```text
 服务器 IP
@@ -1853,7 +2307,7 @@ https://example.com
 是否能够到达？
 ```
 
-## 第三层：防火墙
+## 防火墙
 
 ```text
 443
@@ -1861,7 +2315,7 @@ https://example.com
 是否被 firewalld / nftables 拦截？
 ```
 
-## 第四层：Nginx
+## Nginx
 
 ```text
 Nginx
@@ -1873,7 +2327,7 @@ Nginx
 配置是否正确？
 ```
 
-## 第五层：反向代理
+## 反向代理
 
 ```text
 Nginx
@@ -1888,7 +2342,7 @@ Tomcat
 - 后端是否监听
 - 连接是否能够建立
 
-## 第六层：应用
+## 应用
 
 ```text
 Tomcat
@@ -1938,16 +2392,14 @@ Redis Kafka DB
 
 ---
 
-# 常见服务的核心职责
-
-最后可以把本文涉及的组件放到同一张表里理解：
+# 常见服务核心职责
 
 | 组件 | 解决什么问题 | 常见端口 | 典型位置 |
 |---|---|---:|---|
 | firewalld | 主机网络访问控制 | — | 主机入口 |
 | nftables | 底层数据包过滤 | — | 内核网络栈 |
 | iptables | 传统防火墙规则管理 | — | Netfilter |
-| Nginx | Web、代理、负载均衡 | 80 / 443 | Web 层 |
+| Nginx | Web、代理、缓存、负载均衡 | 80 / 443 | Web 层 |
 | Apache | Web 服务 | 80 / 443 | Web 层 |
 | Tomcat | Java Web 应用运行环境 | 8080 | 应用层 |
 | Redis | 缓存、内存数据 | 6379 | 中间件 |
@@ -1955,7 +2407,7 @@ Redis Kafka DB
 | RabbitMQ | 消息队列 | 5672 | 中间件 |
 | MySQL | 持久化数据 | 3306 | 数据层 |
 
-这里需要牢记一个非常重要的关系：
+可以把它们放到一条链路里理解：
 
 ```text
 iptables / nftables / firewalld
@@ -2014,45 +2466,50 @@ iptables 四表五链是什么
                ┌───────┴───────┐
                │               │
           静态资源           反向代理
-                               │
-                               ▼
-                            Tomcat
-                               │
-                      ┌────────┼────────┐
-                      ▼        ▼        ▼
-                    Redis    Kafka    MySQL
+               │               │
+               │               ▼
+               │            Tomcat
+               │               │
+               │       ┌───────┼───────┐
+               │       ▼       ▼       ▼
+               │     Redis   Kafka   MySQL
+               │
+               └──────► 浏览器
 ```
 
 因此，一名 Linux / 运维工程师真正需要掌握的并不是某一条命令，而是：
 
 > **知道一个请求经过哪些组件，知道每个组件负责什么，知道配置在哪里，知道服务如何启动，知道日志在哪里，以及出现故障时应该在哪一层定位。**
 
-## 官方文档
+---
 
-### Linux / 防火墙
+# 官方文档
+
+## Linux / 防火墙
 
 - [Red Hat Enterprise Linux — Configuring firewalld](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_firewalls_and_packet_filters/)
 - [Netfilter 官方项目](https://netfilter.org/)
-- [iptables / Netfilter 相关文档](https://netfilter.org/documentation/)
+- [Netfilter Documentation](https://netfilter.org/documentation/)
 
-### Nginx
+## Nginx
 
 - [Nginx 官方文档](https://nginx.org/en/docs/)
 - [Nginx Beginner's Guide](https://nginx.org/en/docs/beginners_guide.html)
 - [Nginx HTTP Load Balancing](https://nginx.org/en/docs/http/load_balancing.html)
+- [Nginx Proxy Module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
-### Apache HTTP Server
+## Apache HTTP Server
 
 - [Apache HTTP Server 2.4 Documentation](https://httpd.apache.org/docs/2.4/)
 - [Virtual Host Documentation](https://httpd.apache.org/docs/2.4/vhosts/)
 - [mod_proxy](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html)
 
-### Tomcat
+## Tomcat
 
 - [Apache Tomcat Documentation](https://tomcat.apache.org/)
 - [Tomcat Configuration Reference](https://tomcat.apache.org/tomcat-11.0-doc/config/)
 
-### Kafka
+## Kafka
 
 - [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
 - [Kafka Quickstart](https://kafka.apache.org/quickstart/)
