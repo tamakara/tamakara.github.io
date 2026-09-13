@@ -5,13 +5,13 @@ description: ''
 image: ''
 tags: [Linux, Shell, Bash, 终端, 作业控制]
 category: 学习笔记
-draft: false 
+draft: false
 lang: ''
 ---
 
-> Linux 的日常管理工作大多从命令行开始。要真正理解 Linux 命令行，首先需要弄清楚 **Terminal、Shell、Bash、命令、进程以及作业控制** 之间的关系。
+> Linux 的日常管理工作大多从命令行开始。要真正理解 Linux 命令行，首先需要弄清楚 **Terminal、Shell、Bash、命令以及作业控制** 之间的关系。
 >
-> 本文从终端和 Shell 的基本概念出发，逐步介绍 Bash、命令解析、内建命令与外部命令、`PATH`、环境变量、标准输入输出、管道、重定向、命令替换，以及前后台任务、终端快捷键和 Job Control，建立一套完整的 Linux 命令行认知模型。
+> 本文从终端和 Shell 的基本概念出发，逐步介绍 Bash、命令解析、内建命令与外部命令、`PATH`、环境变量、标准输入输出、管道、重定向、命令替换，以及前后台任务和常用终端快捷键，建立一套完整的 Linux 命令行认知模型。
 
 ## Terminal、Shell 与 Bash
 
@@ -36,20 +36,20 @@ Windows Terminal
 
 ```text
 键盘
-  │
-  ▼
+ │
+ ▼
 Terminal
-  │
-  ▼
+ │
+ ▼
 Shell
-  │
-  ▼
-程序
-  │
-  ▼
+ │
+ ▼
+命令 / 程序
+ │
+ ▼
 Terminal
-  │
-  ▼
+ │
+ ▼
 屏幕
 ```
 
@@ -142,14 +142,13 @@ ls
 输入输出重定向
 管道
 前台 / 后台任务
-作业控制
 ```
 
 所以 Shell 并不是简单的：
 
 ```text
 输入一行
-    ↓
+   ↓
 执行一行
 ```
 
@@ -199,7 +198,7 @@ Bash
 Linux Kernel
 ```
 
-Bash 本身并不负责直接管理：
+Bash 本身并不直接负责：
 
 ```text
 CPU
@@ -218,7 +217,7 @@ Bash 更重要的职责是：
 
 ---
 
-## Terminal、Shell 与进程
+## Terminal、Shell 与命令
 
 ### 三者的关系
 
@@ -236,12 +235,9 @@ Bash 更重要的职责是：
 │       Bash         │
 └─────────┬──────────┘
           │
-          │ 执行命令
+          │ 解析并执行
           ▼
-┌────────────────────┐
-│      Process       │
-│       进程          │
-└────────────────────┘
+       Command
 ```
 
 例如执行：
@@ -263,9 +259,7 @@ Bash
  ↓
 找到 ls
  ↓
-启动进程
- ↓
-程序执行
+执行
  ↓
 产生输出
  ↓
@@ -274,7 +268,7 @@ Terminal 显示
 
 因此可以先记住：
 
-> **Terminal 负责交互，Shell 负责解释，Process 负责执行。**
+> **Terminal 负责交互，Shell 负责解释，具体命令负责完成实际工作。**
 
 ---
 
@@ -399,6 +393,112 @@ Hello alice
 
 ---
 
+### 引号的作用
+
+Shell 中引号非常重要，因为不同引号会影响展开行为。
+
+#### 单引号
+
+```bash
+echo '$USER'
+```
+
+单引号中的内容通常会被当作字面文本处理，因此输出：
+
+```text
+$USER
+```
+
+#### 双引号
+
+```bash
+echo "$USER"
+```
+
+双引号允许变量展开，因此可能输出：
+
+```text
+alice
+```
+
+#### 不使用引号
+
+```bash
+echo $USER
+```
+
+变量同样会展开，同时其结果还可能继续参与后续的 Shell 处理。
+
+因此在脚本和命令行中，经常会看到：
+
+```bash
+"$variable"
+```
+
+这样的写法。
+
+后续编写 Shell 脚本时，正确理解引号尤其重要。
+
+---
+
+### 路径名展开
+
+Shell 还支持路径名展开（Pathname Expansion），例如：
+
+```bash
+ls *.log
+```
+
+这里的：
+
+```text
+*.log
+```
+
+不是 `ls` 自己定义的参数规则，而是可能先由 Shell 展开成多个路径名。
+
+例如当前目录存在：
+
+```text
+app.log
+error.log
+system.log
+```
+
+那么：
+
+```bash
+ls *.log
+```
+
+可能在执行 `ls` 前被 Shell 展开成类似：
+
+```bash
+ls app.log error.log system.log
+```
+
+这一点与正则表达式不同。
+
+例如：
+
+```text
+*.log
+```
+
+是 Shell 的路径名展开；
+
+而：
+
+```text
+^ERROR
+```
+
+通常是正则表达式中的模式。
+
+不要混淆两者。
+
+---
+
 ## 内建命令与外部命令
 
 ### 外部命令
@@ -429,7 +529,7 @@ cat
 ls
 ```
 
-时，Shell 会找到对应的程序并启动执行。
+时，Shell 会找到对应的程序并执行。
 
 可以简化为：
 
@@ -443,7 +543,7 @@ Bash
 /usr/bin/ls
  │
  ▼
-启动进程
+执行
 ```
 
 ---
@@ -472,13 +572,11 @@ read
 cd /var/log
 ```
 
-为什么 `cd` 需要是 Shell 内建命令？
-
 因为 `cd` 的作用是：
 
 > **改变当前 Shell 的工作目录。**
 
-假设它是一个独立程序：
+如果 `cd` 是一个完全独立的程序：
 
 ```text
 Bash
@@ -488,23 +586,15 @@ Bash
       └── 修改 cd 自己的工作目录
 ```
 
-当 `cd` 结束之后：
+那么 `cd` 结束之后：
 
 ```text
 Bash
 ```
 
-的当前工作目录不会因此改变。
+本身的工作目录不会因此改变。
 
-因此必须由当前 Shell 自己执行：
-
-```text
-cd
- ↓
-修改当前 Shell 状态
- ↓
-Shell Builtin
-```
+因此它必须直接由当前 Shell 执行。
 
 类似地：
 
@@ -515,7 +605,7 @@ fg
 bg
 ```
 
-等命令也需要直接操作当前 Shell 的状态。
+等命令也需要操作当前 Shell 的状态，因此通常由 Shell 直接提供。
 
 ---
 
@@ -559,7 +649,7 @@ type -a ls
 command -v ls
 ```
 
-查看 Shell 对该命令的解析结果。
+查看当前 Shell 对该命令的解析结果。
 
 [Bash Builtin Commands](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html) 中可以查看 Bash 内建命令的完整说明。
 
@@ -591,7 +681,7 @@ ls
 echo $PATH
 ```
 
-例如可能是：
+例如：
 
 ```text
 /usr/local/bin:/usr/bin:/bin
@@ -661,6 +751,21 @@ PATH=/usr/bin:/usr/local/bin
 ```
 
 这也是软件多版本共存时经常出现问题的原因之一。
+
+例如：
+
+```text
+/usr/bin/python
+/usr/local/bin/python
+```
+
+到底调用哪个版本，往往就和：
+
+```text
+PATH
+```
+
+的配置有关。
 
 ---
 
@@ -765,7 +870,7 @@ name=Alice
 export name
 ```
 
-后，它会成为环境变量，可以被当前 Shell 启动的子进程继承。
+后，它会被导出到当前 Shell 启动的子进程环境中。
 
 可以理解为：
 
@@ -777,46 +882,10 @@ Shell Variable
 Environment Variable
       │
       ▼
-   子进程继承
+  子进程继承
 ```
 
----
-
-### 父 Shell 与子 Shell
-
-Shell 本身也是一个进程。
-
-例如：
-
-```bash
-bash
-```
-
-会启动一个新的 Bash：
-
-```text
-父 Bash
-  │
-  ▼
-子 Bash
-```
-
-环境变量通常会由父进程传递给子进程：
-
-```text
-父 Shell
-   │
-   ├── PATH
-   ├── HOME
-   └── APP_ENV
-          │
-          ▼
-       子 Shell
-```
-
-但普通 Shell 变量不会自动成为子进程的环境变量。
-
-例如：
+因此：
 
 ```bash
 NAME=Alice
@@ -824,7 +893,7 @@ bash
 echo $NAME
 ```
 
-子 Bash 通常不能读取这个没有导出的变量。
+子 Bash 通常无法读取这个没有导出的变量。
 
 而：
 
@@ -834,7 +903,7 @@ bash
 echo $NAME
 ```
 
-子 Bash 就能够继承：
+子 Bash 就能够得到：
 
 ```text
 Alice
@@ -881,7 +950,7 @@ pwd
 /var/log
 ```
 
-这也再次说明了为什么 `cd` 必须直接修改当前 Shell。
+所以：
 
 ```text
 Bash
@@ -890,6 +959,10 @@ Bash
           ↓
        /var/log
 ```
+
+这也说明：
+
+> `cd` 操作的是当前 Shell 的状态。
 
 ---
 
@@ -908,28 +981,28 @@ Linux 程序通常会使用三个标准文件描述符：
 可以理解为：
 
 ```text
-              Process
-          ┌──────┼──────┐
-          │      │      │
-          ▼      ▼      ▼
-       stdin   stdout  stderr
-         0       1       2
+           Process
+       ┌──────┼──────┐
+       │      │      │
+       ▼      ▼      ▼
+     stdin  stdout  stderr
+       0      1       2
 ```
 
 在交互式环境中可以粗略理解为：
 
 ```text
 键盘
-  │
-  ▼
- stdin
-  │
-  ▼
+ │
+ ▼
+stdin
+ │
+ ▼
 程序
-  │
-  ├──────► stdout ───► Terminal
-  │
-  └──────► stderr ───► Terminal
+ │
+ ├──────► stdout ───► Terminal
+ │
+ └──────► stderr ───► Terminal
 ```
 
 ---
@@ -943,9 +1016,7 @@ Linux 程序通常会使用三个标准文件描述符：
 错误 / 诊断信息
 ```
 
-如果全部混在一起，后续处理会很麻烦。
-
-因此程序通常分别使用：
+因此通常分别使用：
 
 ```text
 stdout
@@ -989,19 +1060,19 @@ stderr → 文件
 2 → stderr
 ```
 
-但进程还可以拥有其他文件描述符：
+但程序还可以拥有其他文件描述符：
 
 ```text
 0   stdin
 1   stdout
 2   stderr
-3   普通文件
+3   文件
 4   Socket
 5   Pipe
 ...
 ```
 
-因此文件描述符不仅可以表示普通文件，也可以关联：
+因此文件描述符不仅可以关联普通文件，也可以关联：
 
 ```text
 文件
@@ -1011,7 +1082,7 @@ Socket
 终端
 ```
 
-这也是后续理解：
+这也是理解后续：
 
 ```text
 重定向
@@ -1039,13 +1110,13 @@ Shell 使用：
 例如：
 
 ```bash
-ps -ef | grep java
+ps aux | grep java
 ```
 
 可以理解为：
 
 ```text
-ps -ef
+ps aux
    │
    │ stdout
    ▼
@@ -1287,7 +1358,7 @@ $(date)
 
 的位置。
 
-可以理解成：
+可以理解为：
 
 ```text
 $(date)
@@ -1336,7 +1407,7 @@ $(...)
 sleep 100
 ```
 
-Shell 启动任务后，会等待该任务结束：
+Shell 会等待命令执行结束：
 
 ```text
 Shell
@@ -1352,7 +1423,7 @@ sleep
 Shell
 ```
 
-在任务运行期间，当前终端主要由这个前台任务使用。
+在任务运行期间，用户通常不能继续向当前 Shell 输入下一条命令。
 
 ---
 
@@ -1378,7 +1449,7 @@ Shell 会将任务放到后台运行，并立即返回新的命令提示符。
 [1] 12345
 ```
 
-这里可能表示：
+这里通常可以理解为：
 
 ```text
 Job ID = 1
@@ -1393,7 +1464,7 @@ ls
 cd /tmp
 ```
 
-整个过程可以理解成：
+整个过程可以理解为：
 
 ```text
 Shell
@@ -1406,242 +1477,69 @@ Shell
 返回提示符
 ```
 
+这里的重点是：
+
+> **后台任务不会阻塞当前 Shell 继续接受用户输入。**
+
+关于进程本身以及 PID、进程组、信号等更深入的内容，会在后续《Linux 基础：进程与作业管理》中专门介绍。
+
 ---
 
 ### Job 与 Process
 
-这两个概念非常容易混淆。
+Shell 中会使用：
 
-#### Process
+> **Job（作业）**
 
-Process 是 Linux 内核管理的执行实体。
-
-通常拥有：
-
-```text
-PID
-```
+来管理用户启动的任务。
 
 例如：
 
 ```text
-PID = 12345
+[1]+ sleep 100
 ```
 
-#### Job
-
-Job 是：
-
-> **Shell 为用户管理任务时使用的概念。**
-
-例如：
-
-```text
-[1] sleep 100
-```
-
-这里的：
+这里：
 
 ```text
 1
 ```
 
-是：
+是 Job ID。
 
-> Job ID
+而操作系统层面的：
 
-因此：
+```text
+PID
+```
+
+则是另一个概念。
+
+可以先简单理解为：
 
 ```text
 Job ID
- ↓
+↓
 Shell 的任务编号
 
 PID
- ↓
-Linux 进程编号
+↓
+系统中的进程编号
 ```
 
-二者不是一回事。
-
-一个 Job 甚至可能包含多个进程。
-
-例如：
+一个 Job 也不一定只对应一个进程，例如 Shell 管道：
 
 ```bash
 producer | consumer
 ```
 
-从 Shell 的角度可以作为一个作业进行管理，但其中涉及多个进程。
+可能涉及多个进程。
 
-所以：
+本文只需要掌握：
 
-> **Job 是 Shell 的管理概念，Process 是操作系统的执行概念。**
+> **Job 是 Shell 用来管理任务的概念；Process 则是操作系统层面的执行对象。**
 
----
-
-# Terminal 快捷键与任务控制
-
-### Ctrl+C：中断前台任务
-
-在终端中按：
-
-```text
-Ctrl + C
-```
-
-通常会使当前前台进程组收到：
-
-```text
-SIGINT
-```
-
-它表示：
-
-> 请求中断当前操作。
-
-例如：
-
-```bash
-sleep 100
-```
-
-运行后按：
-
-```text
-Ctrl + C
-```
-
-通常会使任务退出。
-
-过程可以简化成：
-
-```text
-Terminal
-   │
-   │ Ctrl+C
-   ▼
-Foreground Process Group
-   │
-   │ SIGINT
-   ▼
-Process
-   │
-   ▼
-通常终止
-```
-
-需要注意：
-
-> **Ctrl+C 并不是直接执行“杀死进程”的系统调用。**
-
-它首先触发终端控制机制，最终向前台进程组产生：
-
-```text
-SIGINT
-```
-
-程序收到该信号后可以：
-
-```text
-正常退出
-处理后退出
-忽略
-```
-
-因此：
-
-```text
-Ctrl+C
-≠
-任何情况下都强制杀死程序
-```
-
-后续《Linux 信号机制》会进一步介绍 `SIGINT`、`SIGTERM`、`SIGKILL` 等信号。
-
----
-
-### Ctrl+Z：暂停前台任务
-
-按下：
-
-```text
-Ctrl + Z
-```
-
-通常会使当前前台进程组收到：
-
-```text
-SIGTSTP
-```
-
-它通常表示：
-
-> 请求暂停当前任务。
-
-例如：
-
-```bash
-sleep 100
-```
-
-运行后：
-
-```text
-Ctrl + Z
-```
-
-可能得到：
-
-```text
-[1]+  Stopped    sleep 100
-```
-
-注意：
-
-> 这个任务不是结束了，而是从 Running 变成了 Stopped。
-
-可以理解为：
-
-```text
-Running
-   │
-   │ Ctrl+Z
-   ▼
-Stopped
-```
-
----
-
-### Ctrl+C 与 Ctrl+Z 的区别
-
-这是最需要掌握的一组快捷键：
-
-```text
-Ctrl+C
- ↓
-SIGINT
- ↓
-通常中断任务
-
-Ctrl+Z
- ↓
-SIGTSTP
- ↓
-通常暂停任务
-```
-
-因此：
-
-```text
-Ctrl+C
-→ 停止执行
-
-Ctrl+Z
-→ 暂停执行
-```
-
-虽然日常使用中都表现为“程序不再继续运行”，但底层含义完全不同。
+二者的底层关系将在后续文章中进一步介绍。
 
 ---
 
@@ -1656,8 +1554,8 @@ jobs
 例如：
 
 ```text
-[1]+  Running    sleep 100 &
-[2]-  Stopped    vim test.txt
+[1]+  Running  sleep 100 &
+[2]-  Stopped  vim test.txt
 ```
 
 这里：
@@ -1681,7 +1579,7 @@ Done
 
 > **当前 Shell 管理的作业。**
 
-而它和：
+因此它和：
 
 ```bash
 ps
@@ -1689,19 +1587,15 @@ ps
 
 并不相同。
 
-`ps` 更关注：
-
-> **系统中的进程。**
-
-因此：
+可以简单记成：
 
 ```text
 jobs
- ↓
+↓
 Shell 的 Job
 
 ps
- ↓
+↓
 系统中的 Process
 ```
 
@@ -1718,7 +1612,7 @@ sleep 100 &
 当前 Job 为：
 
 ```text
-[1]+  Running    sleep 100 &
+[1]+  Running  sleep 100 &
 ```
 
 执行：
@@ -1747,7 +1641,7 @@ Foreground
 
 > Job ID 为 1 的任务。
 
-所以：
+因此：
 
 ```text
 %1
@@ -1759,20 +1653,22 @@ Job ID
 PID
 ```
 
+不要把两者混淆。
+
 ---
 
 ### bg：在后台恢复任务
 
-如果任务被：
+如果一个任务被：
 
 ```text
 Ctrl + Z
 ```
 
-暂停：
+暂停，例如：
 
 ```text
-[1]+  Stopped    sleep 100
+[1]+  Stopped  sleep 100
 ```
 
 那么可以：
@@ -1788,10 +1684,10 @@ Stopped
    │
    │ bg %1
    ▼
-Running / Background
+Background
 ```
 
-因此最经典的 Job Control 流程就是：
+因此最经典的 Job Control 操作流程可以简单理解成：
 
 ```text
           sleep 100
@@ -1802,16 +1698,98 @@ Running / Background
               │
               │ bg %1
               ▼
-      Running / Background
+        Background
               │
               │ fg %1
               ▼
-      Running / Foreground
-              │
-              │ Ctrl+C
-              ▼
-          Terminated
+        Foreground
 ```
+
+这里先把它理解成 Shell 的任务管理即可。
+
+---
+
+## Terminal 常用快捷键
+
+### Ctrl+C
+
+在终端中按：
+
+```text
+Ctrl + C
+```
+
+通常用于：
+
+> **中断当前前台任务。**
+
+它会触发终端的中断机制，相关信号机制会在后续《Linux 基础：进程与作业管理》中详细介绍。
+
+这里先记住：
+
+```text
+Ctrl+C
+↓
+通常中断当前前台任务
+```
+
+---
+
+### Ctrl+Z
+
+按下：
+
+```text
+Ctrl + Z
+```
+
+通常用于：
+
+> **暂停当前前台任务，并交回 Shell。**
+
+例如：
+
+```bash
+sleep 100
+```
+
+运行后：
+
+```text
+Ctrl+Z
+```
+
+可能看到：
+
+```text
+[1]+  Stopped  sleep 100
+```
+
+之后可以使用：
+
+```bash
+bg %1
+```
+
+让任务继续在后台运行，或者：
+
+```bash
+fg %1
+```
+
+重新切回前台。
+
+因此：
+
+```text
+Ctrl+C
+→ 通常中断
+
+Ctrl+Z
+→ 通常暂停
+```
+
+底层信号机制不在本文展开。
 
 ---
 
@@ -1835,16 +1813,6 @@ Ctrl+C
 
 完全不同。
 
-```text
-Ctrl+C
-↓
-SIGINT
-
-Ctrl+D
-↓
-EOF
-```
-
 例如运行：
 
 ```bash
@@ -1866,16 +1834,16 @@ hello
 此时按：
 
 ```text
-Ctrl + D
+Ctrl+D
 ```
 
 会让输入端结束，`cat` 读取到 EOF 后退出。
 
 因此：
 
-> `Ctrl+D` 更准确的理解是“输入结束”，而不是“退出程序”。
+> **`Ctrl+D` 更准确的理解是“输入结束”，而不是“终止程序”。**
 
-当 Bash 自己读取到 EOF 时，它也可能因此退出当前 Shell。
+如果 Bash 自己读取到 EOF，它也可能因此退出当前 Shell。
 
 所以：
 
@@ -1889,7 +1857,7 @@ EOF
 
 ---
 
-# Bash 命令行编辑快捷键
+## Bash 命令行编辑快捷键
 
 除了控制任务，Bash 还提供大量用于编辑当前命令行的快捷键。
 
@@ -2042,7 +2010,7 @@ Ctrl + L
 ```text
 命令历史
 文件内容
-后台进程
+后台任务
 ```
 
 之前执行过的命令仍然可以通过：
@@ -2059,8 +2027,8 @@ Ctrl + L
 
 | 快捷键 | 常见作用 |
 |---|---|
-| `Ctrl+C` | 产生 `SIGINT`，通常中断前台任务 |
-| `Ctrl+Z` | 产生 `SIGTSTP`，通常暂停前台任务 |
+| `Ctrl+C` | 通常中断前台任务 |
+| `Ctrl+Z` | 通常暂停前台任务 |
 | `Ctrl+D` | 输入 EOF |
 | `Ctrl+L` | 清理终端显示 |
 | `Ctrl+A` | 光标移动到命令行开头 |
@@ -2092,77 +2060,7 @@ Ctrl+L
 
 ---
 
-# 前台进程组
-
-前面一直使用：
-
-> 当前前台任务
-
-这种说法。
-
-更准确地说，终端存在：
-
-> **Foreground Process Group（前台进程组）**
-
-一个 Job 不一定只包含一个进程。
-
-例如：
-
-```bash
-producer | consumer
-```
-
-可能涉及：
-
-```text
-Job
- │
- ├── producer
- │
- └── consumer
-```
-
-这些进程可以作为一个前台作业与终端进行交互。
-
-因此按：
-
-```text
-Ctrl+C
-```
-
-时，并不是简单地：
-
-```text
-找到一个 PID
- ↓
-发送 SIGINT
-```
-
-而是由终端针对当前前台进程组产生相应的控制信号。
-
-可以简化表示：
-
-```text
-Terminal
-   │
-   │ Ctrl+C
-   ▼
-Foreground Process Group
-   │
-   ├── Process A
-   ├── Process B
-   └── Process C
-```
-
-这也是为什么管道中的多个进程能够整体响应：
-
-```text
-Ctrl+C
-```
-
----
-
-# 交互式与非交互式 Shell
+## 交互式与非交互式 Shell
 
 ### 交互式 Shell
 
@@ -2178,7 +2076,7 @@ Interactive Shell
 
 然后不断输入：
 
-```text
+```bash
 $ pwd
 $ ls
 $ cd /var/log
@@ -2236,12 +2134,12 @@ Interactive Shell
 
 Non-interactive Shell
 ↓
-脚本 / 系统驱动 Shell
+按照输入源自动执行
 ```
 
 ---
 
-# Bash 启动文件
+## Bash 启动文件
 
 Bash 启动时会根据当前 Shell 的类型和启动方式，决定读取哪些初始化文件。
 
@@ -2295,7 +2193,7 @@ fi
 
 ---
 
-# 一个完整的命令执行模型
+## 一个完整的命令执行模型
 
 把前面的内容串起来，一条简单的命令可以理解为：
 
@@ -2317,25 +2215,25 @@ fi
                          │
                      Shell 解析
                          │
-           ┌─────────────┼─────────────┐
-           │             │             │
-           ▼             ▼             ▼
-        Builtin      PATH 查找     Shell 语法
-           │             │             │
-           │             ▼             │
-           │       External Command    │
-           │             │             │
-           └─────────────┼─────────────┘
+            ┌────────────┼────────────┐
+            │            │            │
+            ▼            ▼            ▼
+         Builtin      PATH 查找    Shell 语法
+            │            │            │
+            │            ▼            │
+            │      External Command   │
+            │            │            │
+            └────────────┼────────────┘
                          ▼
-                      Process
+                    执行命令
                          │
-              ┌──────────┼──────────┐
-              ▼          ▼          ▼
-           stdin       stdout     stderr
-              │          │          │
-              └──────────┼──────────┘
+               ┌─────────┼─────────┐
+               ▼         ▼         ▼
+            stdin      stdout    stderr
+               │         │         │
+               └─────────┼─────────┘
                          ▼
-                     Terminal
+                      Terminal
 ```
 
 如果存在管道：
@@ -2387,24 +2285,6 @@ Shell
 继续接受用户输入
 ```
 
-如果存在前后台切换：
-
-```text
-Foreground
-    │
- Ctrl+Z
-    ▼
- Stopped
-    │
-   bg
-    ▼
-Background
-    │
-   fg
-    ▼
-Foreground
-```
-
 因此 Shell 实际上是在组织：
 
 ```text
@@ -2414,7 +2294,7 @@ Foreground
    ↓
 命令查找
    ↓
-进程创建
+命令执行
    ↓
 文件描述符
    ↓
@@ -2429,7 +2309,7 @@ Job Control
 
 ---
 
-# 一个完整的例子
+## 一个完整的例子
 
 假设执行：
 
@@ -2458,7 +2338,7 @@ grep "ERROR" /var/log/app.log
              │
              │ stdin
              ▼
-          wc -l
+           wc -l
              │
              │ stdout
              ▼
@@ -2520,12 +2400,13 @@ Shell 重定向
 
 ---
 
-# Linux 命令行的整体结构
+## Linux 命令行的整体结构
 
 到这里，可以把 Linux 命令行理解成几个相互联系的部分：
 
 ```text
 Linux 命令行
+
 │
 ├── Terminal
 │
@@ -2534,10 +2415,11 @@ Linux 命令行
 │
 ├── Shell 语法
 │   ├── 变量
-│   ├── 管道
-│   ├── 重定向
+│   ├── 引号
 │   ├── 命令替换
-│   └── 作业控制
+│   ├── 路径名展开
+│   ├── 管道
+│   └── 重定向
 │
 ├── 命令
 │   ├── Builtin
@@ -2554,12 +2436,11 @@ Linux 命令行
 │   ├── Ctrl+D
 │   └── Readline
 │
-└── Linux Kernel
-    ├── Process
-    ├── File
-    ├── Memory
-    ├── Network
-    └── Device
+└── Job Control
+    ├── Job
+    ├── jobs
+    ├── fg
+    └── bg
 ```
 
 可以进一步浓缩成：
@@ -2572,8 +2453,6 @@ Shell
 解析命令
    ↓
 Builtin / External Command
-   ↓
-Process
    ↓
 stdin / stdout / stderr
    ↓
@@ -2595,7 +2474,7 @@ Linux 基础
 ├── 文件查看与文本搜索
 ├── 文本处理
 ├── 用户与权限
-├── 进程
+├── 进程与作业管理
 ├── systemd
 ├── 存储
 └── 网络
@@ -2611,9 +2490,17 @@ Linux 基础
 
 > **用户如何通过命令行与 Linux 系统交互。**
 
-后面的文件、权限、进程、网络等专题，则是在这个入口之上进一步理解 Linux 的不同子系统。
+而：
 
----
+```text
+进程与作业管理
+```
+
+则进一步解决：
+
+> **程序如何运行、如何创建和结束、如何接收信号、如何组织线程与进程，以及进程之间如何通信。**
+
+两篇文章的边界因此比较清晰。
 
 ## 外部参考
 
