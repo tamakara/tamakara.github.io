@@ -1,9 +1,12 @@
 ---
-title: Linux 基础：Linux 文件系统
-published: 2026-09-13
+title: Linux 基础：文件系统
+published: 2026-09-13T02:06:57Z
+description: ''
 image: ''
 tags: [Linux, 文件系统, FHS, 文件, 目录, 路径]
 category: 学习笔记
+draft: false 
+lang: ''
 ---
 
 > Linux 中的文件并不是简单地“放在磁盘里”，而是通过文件系统组织成一棵统一的目录树。

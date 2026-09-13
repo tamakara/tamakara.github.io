@@ -1,9 +1,12 @@
 ---
 title: Linux 基础：文本检索与处理
-published: 2026-09-13
+published: 2026-09-13T02:11:15Z
+description: ''
 image: ''
-tags: [Linux, 文本处理, grep, sed, awk, find, Shell]
+tags: [Linux, Shell, 运维]
 category: 学习笔记
+draft: false 
+lang: ''
 ---
 
 > Linux 运维中经常面对大量日志、配置文件、命令输出和系统信息。真正重要的问题通常不是“如何查看文件”，而是如何从大量内容中**快速找到目标、筛选数据、统计结果并进一步加工**。

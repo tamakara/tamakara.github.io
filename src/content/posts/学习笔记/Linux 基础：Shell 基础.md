@@ -1,9 +1,12 @@
 ---
-title: Linux 基础：Linux 终端与 Shell
-published: 2026-09-13
+title: Linux 基础：Shell 基础
+published: 2026-09-13T02:05:45Z
+description: ''
 image: ''
 tags: [Linux, Shell, Bash, 终端, 作业控制]
 category: 学习笔记
+draft: false 
+lang: ''
 ---
 
 > Linux 的日常管理工作大多从命令行开始。要真正理解 Linux 命令行，首先需要弄清楚 **Terminal、Shell、Bash、命令、进程以及作业控制** 之间的关系。
