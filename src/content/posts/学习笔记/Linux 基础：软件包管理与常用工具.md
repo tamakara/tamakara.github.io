@@ -14,9 +14,9 @@ lang: ''
 >
 > 本文主要以 **RHEL / CentOS / Rocky Linux / AlmaLinux 一类系统中的 RPM + DNF 体系**为主，同时介绍 Linux 运维中非常常见的实用工具。
 
-## Linux 软件包管理
+# Linux 软件包管理
 
-### 什么是软件包
+## 什么是软件包
 
 软件包（Package）可以理解为：
 

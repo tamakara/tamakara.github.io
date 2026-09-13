@@ -78,7 +78,7 @@ sleep 100 &
 
 ---
 
-### PID：进程的身份标识
+## PID：进程的身份标识
 
 Linux 使用：
 
@@ -136,7 +136,7 @@ $ echo $$
 
 ---
 
-### PPID：父进程
+## PPID：父进程
 
 进程通常不是凭空出现的。
 
@@ -205,9 +205,9 @@ ps -o pid,ppid,cmd
 
 ---
 
-## 进程的生命周期
+# 进程的生命周期
 
-### 创建、执行与退出
+## 创建、执行与退出
 
 一个进程从产生到消失，大致可以理解为：
 
@@ -245,7 +245,7 @@ exit()
 
 ---
 
-### fork：创建子进程
+## fork：创建子进程
 
 `fork()` 用于创建新的进程。
 
@@ -285,7 +285,7 @@ Child Process
 
 ---
 
-### exec：执行另一个程序
+## exec：执行另一个程序
 
 `fork()` 只是创建一个新的进程，并不会自动把它变成另一个程序。
 
@@ -325,7 +325,7 @@ exec
 
 ---
 
-### wait：回收子进程
+## wait：回收子进程
 
 父进程还需要处理子进程退出后的状态。
 
@@ -357,9 +357,9 @@ Child
 
 ---
 
-## 进程状态
+# 进程状态
 
-### 常见状态
+## 常见状态
 
 Linux 进程并不是一直处于 Running。
 
@@ -394,7 +394,7 @@ ps -eo pid,ppid,stat,cmd
 
 ---
 
-### R：Running / Runnable
+## R：Running / Runnable
 
 `R` 不一定意味着：
 
@@ -414,7 +414,7 @@ Running / Runnable
 
 ---
 
-### S：可中断睡眠
+## S：可中断睡眠
 
 `S` 表示进程正在等待某个事件。
 
@@ -438,7 +438,7 @@ sleep 100
 
 ---
 
-### D：不可中断睡眠
+## D：不可中断睡眠
 
 `D` 经常与 I/O 等待有关。
 
@@ -483,7 +483,7 @@ I/O 延迟
 
 ---
 
-### T：Stopped
+## T：Stopped
 
 进程可以被暂停。
 
@@ -527,7 +527,7 @@ Stopped
 
 ---
 
-### Z：Zombie
+## Z：Zombie
 
 僵尸进程是 Linux 初学者非常容易产生误解的概念。
 
@@ -573,7 +573,7 @@ PID
 
 ---
 
-### 如何排查僵尸进程
+## 如何排查僵尸进程
 
 可以：
 
@@ -600,9 +600,9 @@ ps -fp <PPID>
 
 ---
 
-## 线程：Thread
+# 线程：Thread
 
-### 为什么需要线程
+## 为什么需要线程
 
 一个进程不一定只有一个执行流。
 
@@ -636,7 +636,7 @@ POSIX 线程模型中，同一进程内的线程共享全局内存、堆、文�
 
 ---
 
-### 进程与线程的资源关系
+## 进程与线程的资源关系
 
 可以简化成：
 
@@ -673,7 +673,7 @@ Thread 1      Thread 2
 
 ---
 
-### 进程和线程的主要区别
+## 进程和线程的主要区别
 
 | 对比 | Process | Thread |
 |---|---|---|
@@ -694,7 +694,7 @@ Thread 1      Thread 2
 
 ---
 
-### PID、TID 与线程
+## PID、TID 与线程
 
 Linux 中线程也有自己的线程标识。
 
@@ -728,11 +728,11 @@ Linux 中线程也有自己的线程标识。
 
 ---
 
-## 进程、进程组与 Session
+# 进程、进程组与 Session
 
 这部分是理解 Linux Job Control 的关键。
 
-### Process Group
+## Process Group
 
 多个相关进程可以组成：
 
@@ -757,7 +757,7 @@ Process Group
 
 ---
 
-### Session
+## Session
 
 更上层还有：
 
@@ -784,7 +784,7 @@ Linux man-pages 对 Process Group、Session、控制终端和 Foreground Process
 
 ---
 
-### 为什么 Ctrl+C 能影响整个管道
+## 为什么 Ctrl+C 能影响整个管道
 
 例如：
 
@@ -832,9 +832,9 @@ Ctrl+C → 杀死某一个 PID
 
 ---
 
-## 信号机制
+# 信号机制
 
-### 什么是 Signal
+## 什么是 Signal
 
 Signal（信号）可以理解为：
 
@@ -873,7 +873,7 @@ Linux 的 [`signal(7)`](https://man7.org/linux/man-pages/man7/signal.7.html) 对
 
 ---
 
-### 常见信号
+## 常见信号
 
 | 信号 | 编号 | 常见含义 |
 |---|---:|---|
@@ -903,7 +903,7 @@ SIGINT
 
 ---
 
-### SIGTERM：优雅终止
+## SIGTERM：优雅终止
 
 运维中非常重要的一个信号：
 
@@ -957,7 +957,7 @@ SIGTERM
 
 ---
 
-### SIGKILL：强制终止
+## SIGKILL：强制终止
 
 ```text
 SIGKILL
@@ -1018,7 +1018,7 @@ SIGKILL
 
 ---
 
-### SIGSTOP 与 SIGCONT
+## SIGSTOP 与 SIGCONT
 
 ```text
 SIGSTOP
@@ -1064,7 +1064,7 @@ SIGTSTP
 
 ---
 
-### 信号默认动作
+## 信号默认动作
 
 信号送达进程后，程序可能发生不同结果。
 
@@ -1115,7 +1115,7 @@ SIGSTOP
 
 ---
 
-### 阻塞与 Pending Signal
+## 阻塞与 Pending Signal
 
 信号并不一定在产生后立即被处理。
 
@@ -1172,7 +1172,7 @@ SigCgt
 
 ---
 
-### 标准信号与实时信号
+## 标准信号与实时信号
 
 Linux 中除了普通标准信号，还存在：
 
@@ -1201,7 +1201,7 @@ Linux 中除了普通标准信号，还存在：
 
 ---
 
-### SIGCHLD：子进程状态变化
+## SIGCHLD：子进程状态变化
 
 父进程还经常需要关注：
 
@@ -1242,7 +1242,7 @@ Zombie
 
 ---
 
-### SIGPIPE
+## SIGPIPE
 
 假设：
 
@@ -1282,9 +1282,9 @@ SIGPIPE
 
 ---
 
-## 如何发送信号
+# 如何发送信号
 
-### kill
+## kill
 
 最常用的工具：
 
@@ -1330,7 +1330,7 @@ kill -l
 
 ---
 
-### pkill
+## pkill
 
 可以按照进程属性发送信号：
 
@@ -1346,7 +1346,7 @@ pkill -TERM nginx
 
 ---
 
-### pgrep
+## pgrep
 
 `pgrep` 用于按照名称等条件查找 PID：
 
@@ -1380,9 +1380,9 @@ kill
 
 ---
 
-## 进程优先级与调度
+# 进程优先级与调度
 
-### Nice 值
+## Nice 值
 
 Linux 中普通进程可以使用：
 
@@ -1442,9 +1442,9 @@ renice 10 -p 1234
 
 ---
 
-## 常见进程管理工具
+# 常见进程管理工具
 
-### ps：查看进程快照
+## ps：查看进程快照
 
 ```bash
 ps
@@ -1482,7 +1482,7 @@ COMMAND
 
 ---
 
-### top：动态观察进程
+## top：动态观察进程
 
 ```bash
 top
@@ -1519,7 +1519,7 @@ Load 持续变化
 
 ---
 
-### pstree：查看进程树
+## pstree：查看进程树
 
 ```bash
 pstree
@@ -1546,7 +1546,7 @@ systemd
 
 ---
 
-### /proc：观察进程内部信息
+## /proc：观察进程内部信息
 
 Linux 提供：
 
@@ -1606,7 +1606,7 @@ $$
 
 ---
 
-### /proc/<pid>/fd
+## /proc/<pid>/fd
 
 例如：
 
@@ -1643,9 +1643,9 @@ File Descriptor
 
 ---
 
-## 进程间通信 IPC
+# 进程间通信 IPC
 
-### 什么是 IPC
+## 什么是 IPC
 
 不同进程拥有相互隔离的地址空间。
 
@@ -1700,9 +1700,9 @@ Socket
 
 ---
 
-## Pipe：匿名管道
+# Pipe：匿名管道
 
-### 基本原理
+## 基本原理
 
 管道提供一个单向的数据通道：
 
@@ -1744,7 +1744,7 @@ Linux 的 [`pipe(7)`](https://man7.org/linux/man-pages/man7/pipe.7.html) 将 Pip
 
 ---
 
-### Pipe 的特点
+## Pipe 的特点
 
 匿名管道通常适合：
 
@@ -1772,7 +1772,7 @@ Read
 
 ---
 
-## FIFO：命名管道
+# FIFO：命名管道
 
 FIFO 又称：
 
@@ -1808,9 +1808,9 @@ Process B
 
 ---
 
-## Shared Memory：共享内存
+# Shared Memory：共享内存
 
-### 基本原理
+## 基本原理
 
 共享内存允许多个进程把同一块内存区域映射到各自的地址空间。
 
@@ -1854,7 +1854,7 @@ Linux 上对应的对象通常可以在：
 
 ---
 
-### 为什么共享内存还需要同步
+## 为什么共享内存还需要同步
 
 共享内存的问题是：
 
@@ -1892,7 +1892,7 @@ Condition
 
 ---
 
-## Semaphore：信号量
+# Semaphore：信号量
 
 信号量主要用于：
 
@@ -1947,7 +1947,7 @@ Semaphore
 
 ---
 
-## Message Queue：消息队列
+# Message Queue：消息队列
 
 消息队列和共享内存最大的区别之一是：
 
@@ -1993,7 +1993,7 @@ mq_unlink()
 
 ---
 
-## Unix Domain Socket：本机进程通信
+# Unix Domain Socket：本机进程通信
 
 Unix Domain Socket 又称：
 
@@ -2057,7 +2057,7 @@ Linux 的 [`unix(7)`](https://man7.org/linux/man-pages/man7/unix.7.html) 专门�
 
 ---
 
-## IPC 方式对比
+# IPC 方式对比
 
 可以把常见 IPC 简单整理成：
 
@@ -2093,9 +2093,9 @@ Linux 的 [`unix(7)`](https://man7.org/linux/man-pages/man7/unix.7.html) 专门�
 
 ---
 
-## 进程管理中的常见场景
+# 进程管理中的常见场景
 
-### 场景一：CPU 占用异常
+## 场景一：CPU 占用异常
 
 例如发现：
 
@@ -2164,7 +2164,7 @@ ps
 
 ---
 
-### 场景二：程序无法停止
+## 场景二：程序无法停止
 
 先：
 
@@ -2198,7 +2198,7 @@ kill -9
 
 ---
 
-### 场景三：进程状态为 D
+## 场景三：进程状态为 D
 
 例如：
 
@@ -2236,7 +2236,7 @@ ps -eo pid,stat,cmd
 
 ---
 
-### 场景四：大量 Zombie
+## 场景四：大量 Zombie
 
 例如：
 
@@ -2271,7 +2271,7 @@ PPID
 
 ---
 
-### 场景五：进程很多，但不知道从哪里来的
+## 场景五：进程很多，但不知道从哪里来的
 
 可以使用：
 
@@ -2309,7 +2309,7 @@ systemd
 
 ---
 
-## 进程、线程、信号与 IPC 的整体关系
+# 进程、线程、信号与 IPC 的整体关系
 
 到这里，可以把整个知识体系串起来：
 
@@ -2397,7 +2397,7 @@ Foreground Process Group
 
 ---
 
-## Linux 进程管理的常用工具链
+# Linux 进程管理的常用工具链
 
 实际运维中不需要死记所有工具，而是可以按照问题选择。
 
@@ -2473,7 +2473,7 @@ nice / renice
 
 ---
 
-## 一个完整的进程管理认知模型
+# 一个完整的进程管理认知模型
 
 可以把 Linux 中的进程理解成：
 
@@ -2570,7 +2570,7 @@ Kubernetes
 
 这也是 Linux 进程管理真正值得掌握的部分。
 
-## 外部参考
+# 外部参考
 
 - [Linux man-pages](https://man7.org/linux/man-pages/)
 - [ps(1)](https://man7.org/linux/man-pages/man1/ps.1.html)

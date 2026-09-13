@@ -13,7 +13,7 @@ lang: ''
 >
 > 本文从常用网络诊断工具开始，逐步介绍 `ping`、`traceroute`、`ss`、`tcpdump`、`curl`，然后进入 Linux 防火墙体系，理解 **Netfilter、iptables、四表五链、数据包路径**，再介绍现代 Linux 中常见的 **firewalld 与 nftables**，最后通过一套从 DNS → 路由 → 端口 → 防火墙 → 服务 → 应用的排障流程，把这些知识串起来。
 
-## Linux 网络管理的整体结构
+# Linux 网络管理的整体结构
 
 在前面的网络基础系列中，我们已经从 TCP/IP 四层模型理解了：
 

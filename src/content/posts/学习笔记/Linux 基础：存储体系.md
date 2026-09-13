@@ -17,7 +17,7 @@ lang: ''
 >
 > 本文从物理存储开始，建立一套 Linux 存储体系，并进一步介绍 **HDD / SSD、SATA / SAS / NVMe、Block Device、MBR / GPT、UEFI、ext4 / XFS、mount / fstab / UUID、inode、LVM、RAID、扩容与故障排查**。
 
-## Linux 存储体系
+# Linux 存储体系
 
 学习 Linux 存储时，最容易混淆的是：
 

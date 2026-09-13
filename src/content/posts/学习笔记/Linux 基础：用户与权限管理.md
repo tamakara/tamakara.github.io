@@ -16,7 +16,7 @@ lang: ''
 >
 > Linux 的用户与权限体系正是围绕这两个问题建立起来的。本文从 **UID / GID、用户组、`/etc/passwd`** 开始，逐步介绍文件权限、`chmod`、`chown`、`umask`、SUID、SGID、Sticky Bit，以及 `sudo` 和最小权限原则。
 
-## Linux 的用户与权限体系
+# Linux 的用户与权限体系
 
 Linux 的权限控制可以先抽象成：
 

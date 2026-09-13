@@ -13,9 +13,9 @@ lang: ''
 >
 > 本文从终端和 Shell 的基本概念出发，逐步介绍 Bash、命令解析、内建命令与外部命令、`PATH`、环境变量、标准输入输出、管道、重定向、命令替换，以及前后台任务和常用终端快捷键，建立一套完整的 Linux 命令行认知模型。
 
-## Terminal、Shell 与 Bash
+# Terminal、Shell 与 Bash
 
-### 什么是 Terminal
+## 什么是 Terminal
 
 我们平时打开的“终端窗口”，通常是一个：
 
@@ -67,7 +67,7 @@ ls
 
 ---
 
-### TTY 与 PTY
+## TTY 与 PTY
 
 在 Linux / Unix 中，终端还涉及两个常见概念：
 
@@ -103,7 +103,7 @@ TTY 最初来自 Teletype，现代系统中的终端设备接口延续了这一�
 
 ---
 
-### 什么是 Shell
+## 什么是 Shell
 
 Shell 可以理解为：
 
@@ -169,7 +169,7 @@ fish
 
 ---
 
-### Bash 是什么
+## Bash 是什么
 
 Bash 全称：
 
@@ -217,9 +217,9 @@ Bash 更重要的职责是：
 
 ---
 
-## Terminal、Shell 与命令
+# Terminal、Shell 与命令
 
-### 三者的关系
+## 三者的关系
 
 可以先建立这样一个模型：
 
@@ -272,9 +272,9 @@ Terminal 显示
 
 ---
 
-## Shell 如何执行命令
+# Shell 如何执行命令
 
-### 命令的基本结构
+## 命令的基本结构
 
 最简单的命令形式通常可以写成：
 
@@ -328,7 +328,7 @@ grep -n
 
 ---
 
-### Shell 的解析过程
+## Shell 的解析过程
 
 例如：
 
@@ -393,11 +393,11 @@ Hello alice
 
 ---
 
-### 引号的作用
+## 引号的作用
 
 Shell 中引号非常重要，因为不同引号会影响展开行为。
 
-#### 单引号
+## 单引号
 
 ```bash
 echo '$USER'
@@ -409,7 +409,7 @@ echo '$USER'
 $USER
 ```
 
-#### 双引号
+## 双引号
 
 ```bash
 echo "$USER"
@@ -421,7 +421,7 @@ echo "$USER"
 alice
 ```
 
-#### 不使用引号
+## 不使用引号
 
 ```bash
 echo $USER
@@ -441,7 +441,7 @@ echo $USER
 
 ---
 
-### 路径名展开
+## 路径名展开
 
 Shell 还支持路径名展开（Pathname Expansion），例如：
 
@@ -499,9 +499,9 @@ ls app.log error.log system.log
 
 ---
 
-## 内建命令与外部命令
+# 内建命令与外部命令
 
-### 外部命令
+## 外部命令
 
 Linux 中很多常用命令其实是独立的可执行程序。
 
@@ -548,7 +548,7 @@ Bash
 
 ---
 
-### Shell 内建命令
+## Shell 内建命令
 
 另一部分命令直接由 Shell 自己实现，这些叫：
 
@@ -609,7 +609,7 @@ bg
 
 ---
 
-### 判断命令来自哪里
+## 判断命令来自哪里
 
 可以使用：
 
@@ -655,9 +655,9 @@ command -v ls
 
 ---
 
-## PATH 与命令查找
+# PATH 与命令查找
 
-### 什么是 PATH
+## 什么是 PATH
 
 执行：
 
@@ -715,7 +715,7 @@ ls
 
 ---
 
-### PATH 的顺序
+## PATH 的顺序
 
 假设系统中存在：
 
@@ -769,9 +769,9 @@ PATH
 
 ---
 
-## Shell 环境
+# Shell 环境
 
-### Shell 变量
+## Shell 变量
 
 Shell 可以定义自己的变量：
 
@@ -803,7 +803,7 @@ name = Alice
 
 ---
 
-### 环境变量
+## 环境变量
 
 Linux Shell 中经常会看到：
 
@@ -842,7 +842,7 @@ echo $HOME
 
 ---
 
-### Shell 变量与环境变量
+## Shell 变量与环境变量
 
 需要区分：
 
@@ -911,7 +911,7 @@ Alice
 
 ---
 
-### 当前工作目录
+## 当前工作目录
 
 每个 Shell 都有自己的：
 
@@ -966,9 +966,9 @@ Bash
 
 ---
 
-## 标准输入、输出与文件描述符
+# 标准输入、输出与文件描述符
 
-### stdin、stdout、stderr
+## stdin、stdout、stderr
 
 Linux 程序通常会使用三个标准文件描述符：
 
@@ -1007,7 +1007,7 @@ stdin
 
 ---
 
-### 为什么要区分 stdout 和 stderr
+## 为什么要区分 stdout 和 stderr
 
 程序运行时可能产生两类信息：
 
@@ -1046,7 +1046,7 @@ stderr → 文件
 
 ---
 
-### 文件描述符
+## 文件描述符
 
 文件描述符（File Descriptor）可以理解为：
 
@@ -1095,9 +1095,9 @@ Socket
 
 ---
 
-## 管道、重定向与命令替换
+# 管道、重定向与命令替换
 
-### 管道
+## 管道
 
 Shell 使用：
 
@@ -1145,7 +1145,7 @@ ps aux
 
 ---
 
-### 输出重定向
+## 输出重定向
 
 正常情况下：
 
@@ -1189,7 +1189,7 @@ test.txt
 
 ---
 
-### 追加重定向
+## 追加重定向
 
 使用：
 
@@ -1220,7 +1220,7 @@ stdout
 
 ---
 
-### 输入重定向
+## 输入重定向
 
 使用：
 
@@ -1250,7 +1250,7 @@ app.log
 
 ---
 
-### 标准错误重定向
+## 标准错误重定向
 
 因为：
 
@@ -1277,7 +1277,7 @@ error.log
 
 ---
 
-### 合并 stdout 与 stderr
+## 合并 stdout 与 stderr
 
 例如：
 
@@ -1332,7 +1332,7 @@ command 2>&1 > app.log
 
 ---
 
-### 命令替换
+## 命令替换
 
 Shell 还支持：
 
@@ -1397,9 +1397,9 @@ $(...)
 
 ---
 
-## Shell 前台、后台与作业控制
+# Shell 前台、后台与作业控制
 
-### 前台任务
+## 前台任务
 
 执行：
 
@@ -1427,7 +1427,7 @@ Shell
 
 ---
 
-### 后台任务
+## 后台任务
 
 命令末尾加上：
 
@@ -1485,7 +1485,7 @@ Shell
 
 ---
 
-### Job 与 Process
+## Job 与 Process
 
 Shell 中会使用：
 
@@ -1543,7 +1543,7 @@ producer | consumer
 
 ---
 
-### jobs：查看当前 Job
+## jobs：查看当前 Job
 
 使用：
 
@@ -1601,7 +1601,7 @@ ps
 
 ---
 
-### fg：将任务切换到前台
+## fg：将任务切换到前台
 
 假设：
 
@@ -1657,7 +1657,7 @@ PID
 
 ---
 
-### bg：在后台恢复任务
+## bg：在后台恢复任务
 
 如果一个任务被：
 
@@ -1709,9 +1709,9 @@ Background
 
 ---
 
-## Terminal 常用快捷键
+# Terminal 常用快捷键
 
-### Ctrl+C
+## Ctrl+C
 
 在终端中按：
 
@@ -1735,7 +1735,7 @@ Ctrl+C
 
 ---
 
-### Ctrl+Z
+## Ctrl+Z
 
 按下：
 
@@ -1793,7 +1793,7 @@ Ctrl+Z
 
 ---
 
-### Ctrl+D：EOF
+## Ctrl+D：EOF
 
 另一个非常常见的快捷键：
 
@@ -1857,7 +1857,7 @@ EOF
 
 ---
 
-## Bash 命令行编辑快捷键
+# Bash 命令行编辑快捷键
 
 除了控制任务，Bash 还提供大量用于编辑当前命令行的快捷键。
 
@@ -1869,7 +1869,7 @@ EOF
 
 参考：[Bash Readline](https://www.gnu.org/software/bash/manual/html_node/Readline.html)。
 
-### Ctrl+A 与 Ctrl+E
+## Ctrl+A 与 Ctrl+E
 
 ```text
 Ctrl + A
@@ -1921,7 +1921,7 @@ sudo systemctl restart nginx|
 
 ---
 
-### Ctrl+W
+## Ctrl+W
 
 ```text
 Ctrl + W
@@ -1949,7 +1949,7 @@ $ echo hello |
 
 ---
 
-### Ctrl+U
+## Ctrl+U
 
 ```text
 Ctrl + U
@@ -1971,7 +1971,7 @@ $ echo hello world|
 
 ---
 
-### Ctrl+K
+## Ctrl+K
 
 ```text
 Ctrl + K
@@ -1993,7 +1993,7 @@ $ echo hello|
 
 ---
 
-### Ctrl+L
+## Ctrl+L
 
 ```text
 Ctrl + L
@@ -2023,7 +2023,7 @@ Ctrl + L
 
 ---
 
-### 常见快捷键
+## 常见快捷键
 
 | 快捷键 | 常见作用 |
 |---|---|
@@ -2060,9 +2060,9 @@ Ctrl+L
 
 ---
 
-## 交互式与非交互式 Shell
+# 交互式与非交互式 Shell
 
-### 交互式 Shell
+## 交互式 Shell
 
 我们平时打开终端：
 
@@ -2089,7 +2089,7 @@ $ cat app.log
 
 ---
 
-### 非交互式 Shell
+## 非交互式 Shell
 
 执行：
 
@@ -2139,7 +2139,7 @@ Non-interactive Shell
 
 ---
 
-## Bash 启动文件
+# Bash 启动文件
 
 Bash 启动时会根据当前 Shell 的类型和启动方式，决定读取哪些初始化文件。
 
@@ -2152,7 +2152,7 @@ Bash 启动时会根据当前 Shell 的类型和启动方式，决定读取哪�
 ~/.profile
 ```
 
-### `.bashrc`
+## `.bashrc`
 
 通常用于：
 
@@ -2167,7 +2167,7 @@ export EDITOR=vim
 
 ---
 
-### `.bash_profile`
+## `.bash_profile`
 
 通常用于：
 
@@ -2193,7 +2193,7 @@ fi
 
 ---
 
-## 一个完整的命令执行模型
+# 一个完整的命令执行模型
 
 把前面的内容串起来，一条简单的命令可以理解为：
 
@@ -2309,7 +2309,7 @@ Job Control
 
 ---
 
-## 一个完整的例子
+# 一个完整的例子
 
 假设执行：
 
@@ -2400,7 +2400,7 @@ Shell 重定向
 
 ---
 
-## Linux 命令行的整体结构
+# Linux 命令行的整体结构
 
 到这里，可以把 Linux 命令行理解成几个相互联系的部分：
 
@@ -2502,7 +2502,7 @@ Linux 基础
 
 两篇文章的边界因此比较清晰。
 
-## 外部参考
+# 外部参考
 
 - [GNU Bash Reference Manual](https://www.gnu.org/software/bash/manual/)
 - [GNU Coreutils Manual](https://www.gnu.org/software/coreutils/manual/)

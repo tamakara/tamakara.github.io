@@ -15,9 +15,9 @@ lang: ''
 >
 > 本文从 SSH 远程管理开始，介绍密码认证、公钥认证、`authorized_keys`、`~/.ssh/config`，再进一步理解 DAC 与 MAC、SELinux Context、Policy、Enforcing / Permissive，以及 Linux 服务器中常见的权限边界和安全检查思路。
 
-## SSH 远程管理
+# SSH 远程管理
 
-### 什么是 SSH
+## 什么是 SSH
 
 SSH：
 
