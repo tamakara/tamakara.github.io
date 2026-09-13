@@ -1,9 +1,12 @@
 ---
-title: Vim 使用教程
-published: 2026-09-10
+title: Linux 基础：Vim 使用教程
+published: 2026-09-13T07:12:06Z
+description: ''
 image: ''
 tags: [Vim, 文本编辑器, Linux, 操作系统, 运维]
 category: 学习笔记
+draft: false 
+lang: ''
 ---
 
 > 本文介绍 Linux 中常用的文本编辑器 **Vim**，以服务器上的配置文件、日志和代码编辑为主要使用场景。
