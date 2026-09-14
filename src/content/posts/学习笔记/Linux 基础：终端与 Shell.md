@@ -1,5 +1,5 @@
 ---
-title: Linux 基础：Shell 基础
+title: Linux 基础：终端与 Shell
 published: 2026-09-13T02:05:45Z
 description: ''
 image: ''
