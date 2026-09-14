@@ -1,0 +1,3186 @@
+---
+title: 云计算基础：云服务器与云存储
+published: 2026-09-14T05:33:17Z
+description: ''
+image: ''
+tags: [云计算, ECS, VPC, SLB, NAT, 云存储, Linux, 运维]
+category: 学习笔记
+draft: false
+lang: ''
+---
+
+> 云计算并不是“把服务器放到网上”这么简单，而是把计算、网络、存储、安全和流量管理等基础设施能力抽象成可以按需创建和管理的资源。
+>
+> 本文主要从运维视角理解公有云中的 **ECS、VPC、Subnet、Route Table、安全组、SLB、NAT Gateway、块存储、对象存储、文件存储**，并最终将这些组件组合成一个可以实际运行的 Web 应用架构。
+
+# 一、什么是云计算
+
+## 1.1 云计算
+
+传统服务器部署通常需要：
+
+```text
+购买物理服务器
+      ↓
+机房
+      ↓
+网络
+      ↓
+电源
+      ↓
+操作系统
+      ↓
+应用
+```
+
+而云计算将这些基础设施能力抽象为：
+
+```text
+Compute
+Network
+Storage
+Security
+Load Balancing
+```
+
+用户通过控制台、API 或 CLI 创建资源：
+
+```text
+User
+ │
+ ▼
+Cloud API / Console
+ │
+ ├── Compute
+ ├── Network
+ ├── Storage
+ └── Security
+```
+
+因此，云计算本质上是一种：
+
+```text
+按需获取计算资源
++
+通过网络管理资源
++
+按使用规模进行弹性配置
+```
+
+的基础设施模式。
+
+## 1.2 公有云
+
+公有云是由云服务提供商建设并运营的云平台。
+
+例如：
+
+```text
+Alibaba Cloud
+AWS
+Microsoft Azure
+Google Cloud
+```
+
+用户不需要自己建设：
+
+```text
+机房
+物理服务器
+交换机
+存储设备
+```
+
+而是直接使用云厂商提供的资源。
+
+例如在阿里云中：
+
+```text
+ECS
+VPC
+SLB
+NAT Gateway
+OSS
+```
+
+共同组成云上的基础设施。
+
+其中：
+
+```text
+ECS
+→ 计算
+
+VPC
+→ 网络
+
+SLB
+→ 流量分发
+
+NAT Gateway
+→ 出口访问
+
+OSS
+→ 对象存储
+```
+
+## 1.3 IaaS、PaaS、SaaS
+
+云计算服务通常可以按抽象程度分为：
+
+```text
+IaaS
+PaaS
+SaaS
+```
+
+### IaaS
+
+IaaS（Infrastructure as a Service）提供比较底层的基础设施能力。
+
+例如：
+
+```text
+虚拟机
+网络
+磁盘
+负载均衡
+```
+
+用户仍然需要负责：
+
+```text
+操作系统
+软件
+应用
+数据
+```
+
+典型：
+
+```text
+ECS
+EC2
+Azure Virtual Machines
+```
+
+### PaaS
+
+PaaS 在基础设施之上进一步托管：
+
+```text
+运行环境
+中间件
+数据库
+容器平台
+```
+
+用户更加关注：
+
+```text
+应用
+```
+
+而不是：
+
+```text
+虚拟机
+操作系统
+```
+
+### SaaS
+
+SaaS 则直接提供：
+
+```text
+可使用的软件
+```
+
+例如：
+
+```text
+在线办公系统
+邮件服务
+在线 CRM
+```
+
+可以简单理解：
+
+```text
+IaaS
+→ 我租基础设施
+
+PaaS
+→ 我主要部署应用
+
+SaaS
+→ 我直接使用软件
+```
+
+# 二、云服务器
+
+## 2.1 ECS 是什么
+
+不同云厂商名称不同。
+
+阿里云通常使用：
+
+```text
+ECS
+Elastic Compute Service
+```
+
+AWS 对应常见的是：
+
+```text
+EC2
+Elastic Compute Cloud
+```
+
+Azure 则使用：
+
+```text
+Virtual Machines
+```
+
+它们解决的问题基本相同：
+
+```text
+提供云上的虚拟计算机
+```
+
+因此可以抽象成：
+
+```text
+Cloud Server
+   │
+   ├── CPU
+   ├── Memory
+   ├── OS
+   ├── Disk
+   └── Network
+```
+
+例如创建一个 ECS 后：
+
+```text
+ECS
+ │
+ ├── Ubuntu
+ ├── 2 vCPU
+ ├── 4 GB Memory
+ ├── System Disk
+ └── Private IP
+```
+
+然后就可以像管理普通 Linux 服务器一样：
+
+```bash
+ssh root@<public-ip>
+```
+
+进行：
+
+```text
+软件安装
+服务部署
+配置管理
+日志排查
+监控
+```
+
+## 2.2 实例规格
+
+云服务器通常可以选择：
+
+```text
+CPU
+Memory
+Network
+Storage
+```
+
+例如：
+
+```text
+2 vCPU
+4 GiB Memory
+100 GB Disk
+```
+
+不同实例规格还可能对应：
+
+```text
+CPU 型
+Memory 型
+计算型
+通用型
+网络增强型
+```
+
+因此购买云服务器时，不应该只看：
+
+```text
+CPU 核数
+```
+
+还需要关注：
+
+```text
+内存
+网络带宽
+磁盘类型
+IOPS
+实例网络能力
+价格
+```
+
+## 2.3 镜像
+
+创建 ECS 时通常需要选择：
+
+```text
+Image
+```
+
+也就是服务器初始操作系统和软件环境的模板。
+
+例如：
+
+```text
+Ubuntu
+Debian
+Rocky Linux
+Alibaba Cloud Linux
+Windows Server
+```
+
+整体过程：
+
+```text
+Image
+   │
+   ▼
+Create ECS
+   │
+   ▼
+Running Instance
+```
+
+镜像还可以来自：
+
+```text
+官方镜像
+自定义镜像
+市场镜像
+共享镜像
+```
+
+常见运维场景：
+
+```text
+服务器 A
+   │
+   ▼
+制作自定义镜像
+   │
+   ▼
+服务器 B / C / D
+```
+
+这样可以快速复制基础环境。
+
+# 三、云服务器磁盘
+
+## 3.1 系统盘与数据盘
+
+云服务器一般至少涉及：
+
+```text
+System Disk
+Data Disk
+```
+
+例如：
+
+```text
+ECS
+ │
+ ├── System Disk
+ │      └── /
+ │
+ └── Data Disk
+        └── /data
+```
+
+系统盘主要存放：
+
+```text
+操作系统
+系统软件
+```
+
+数据盘更适合：
+
+```text
+数据库
+业务文件
+日志
+应用数据
+```
+
+## 3.2 块存储
+
+云平台的云盘通常属于：
+
+```text
+Block Storage
+```
+
+可以把它理解成：
+
+```text
+云上的虚拟硬盘
+```
+
+操作系统看到的仍然类似：
+
+```text
+/dev/vda
+/dev/vdb
+```
+
+然后可以：
+
+```bash
+lsblk
+```
+
+查看。
+
+例如：
+
+```text
+vda
+├── vda1
+└── vda2
+
+vdb
+```
+
+可以进一步：
+
+```bash
+mkfs.ext4 /dev/vdb
+mkdir /data
+mount /dev/vdb /data
+```
+
+因此：
+
+```text
+Cloud Block Storage
+       ↓
+Virtual Disk
+       ↓
+Linux Filesystem
+```
+
+## 3.3 云盘类型
+
+云平台通常会提供不同性能级别的云盘，例如：
+
+```text
+普通型
+高性能型
+SSD
+ESSD / Premium SSD
+```
+
+性能通常需要关注：
+
+```text
+IOPS
+Throughput
+Latency
+```
+
+因此数据库服务器选磁盘时，不能只看：
+
+```text
+500 GB
+```
+
+还需要关注：
+
+```text
+IOPS
+吞吐量
+延迟
+```
+
+# 四、VPC 与云网络
+
+## 4.1 什么是 VPC
+
+VPC（Virtual Private Cloud）可以理解为：
+
+> 云平台中属于你的逻辑隔离网络。
+
+例如：
+
+```text
+VPC
+10.0.0.0/16
+```
+
+里面可以继续划分：
+
+```text
+Subnet A
+10.0.1.0/24
+
+Subnet B
+10.0.2.0/24
+```
+
+ECS：
+
+```text
+ECS A
+10.0.1.10
+
+ECS B
+10.0.2.10
+```
+
+都位于：
+
+```text
+10.0.0.0/16
+```
+
+范围内。
+
+阿里云官方将 VPC 定义为逻辑隔离的私有网络，ECS、SLB、RDS 等资源都可以部署其中。
+
+参考：
+[Alibaba Cloud VPC](https://www.alibabacloud.com/help/en/vpc/)
+
+## 4.2 为什么需要 VPC
+
+没有网络隔离时：
+
+```text
+所有服务器
+   │
+   ▼
+同一个平面
+```
+
+安全性和管理都会比较混乱。
+
+而 VPC 可以形成：
+
+```text
+                  VPC
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+      Public Subnet     Private Subnet
+          │                 │
+        SLB                 │
+        Bastion             │
+                            ├── App
+                            ├── DB
+                            └── Redis
+```
+
+这样可以把：
+
+```text
+对公网服务
+```
+
+和：
+
+```text
+内部服务
+```
+
+分离开。
+
+# 五、Subnet
+
+## 5.1 子网
+
+Subnet 是 VPC 内部进一步划分的网络。
+
+例如：
+
+```text
+VPC
+10.0.0.0/16
+
+├── Subnet A
+│   10.0.1.0/24
+│
+├── Subnet B
+│   10.0.2.0/24
+│
+└── Subnet C
+    10.0.3.0/24
+```
+
+不同云厂商可能使用：
+
+```text
+Subnet
+vSwitch
+Subnet
+```
+
+等不同术语。
+
+在阿里云中常见：
+
+```text
+VPC
+  ↓
+vSwitch
+```
+
+vSwitch 是 VPC 中进一步划分的网络资源。
+
+## 5.2 公网子网与私网子网
+
+从架构设计角度经常会使用：
+
+```text
+Public Subnet
+Private Subnet
+```
+
+例如：
+
+```text
+                Internet
+                    │
+                    ▼
+             Public Subnet
+                    │
+                   SLB
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+      Private Subnet      Private Subnet
+          │                   │
+        App 1                App 2
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+                 Database
+```
+
+这里：
+
+```text
+SLB
+→ 对外提供入口
+
+App
+→ 私网运行
+
+DB
+→ 更加严格限制访问
+```
+
+# 六、Route Table
+
+## 6.1 路由表是什么
+
+云 VPC 中的 Route Table 决定：
+
+```text
+数据包应该往哪里走
+```
+
+例如：
+
+```text
+10.0.0.0/16
+→ local
+
+0.0.0.0/0
+→ Internet / NAT Gateway
+```
+
+可以理解成：
+
+```text
+Destination
+       │
+       ▼
+Route Table
+       │
+       ▼
+Next Hop
+```
+
+阿里云官方将路由表描述为指导 VPC 流量转发的网络路径配置，并通过路由条目决定流量的下一跳。 ([alibabacloud.com](https://www.alibabacloud.com/help/en/vpc/vpc-route-table/))
+
+## 6.2 默认路由
+
+例如：
+
+```text
+0.0.0.0/0
+```
+
+代表：
+
+```text
+所有 IPv4 目的地址
+```
+
+如果配置：
+
+```text
+0.0.0.0/0
+→ NAT Gateway
+```
+
+就可以让私网资源通过 NAT 出网。
+
+## 6.3 路由与安全组不是一回事
+
+一个非常重要的区别：
+
+```text
+Route Table
+→ “流量往哪里走？”
+
+Security Group
+→ “允许不允许？”
+```
+
+例如：
+
+```text
+Route Table
+→ 找得到 Database
+
+Security Group
+→ 不允许 5432
+```
+
+最终仍然：
+
+```text
+连接失败
+```
+
+因此云网络排障一定要把：
+
+```text
+Routing
+Security
+```
+
+分开看。
+
+# 七、云安全组与 ACL
+
+## 7.1 Security Group
+
+安全组是一种与云资源关联的网络访问控制机制。
+
+可以理解成：
+
+```text
+ECS
+ │
+ └── Security Group
+       ├── Inbound Rules
+       └── Outbound Rules
+```
+
+例如：
+
+```text
+允许：
+22/tcp
+80/tcp
+443/tcp
+```
+
+拒绝：
+
+```text
+3306
+5432
+6379
+```
+
+对公网开放的安全组应该尽量遵循：
+
+```text
+最小开放范围
+```
+
+例如 SSH：
+
+```text
+0.0.0.0/0
+```
+
+意味着：
+
+```text
+任何公网地址都可能尝试访问
+```
+
+如果条件允许，更合理：
+
+```text
+你的办公公网 IP
+→ TCP 22
+```
+
+## 7.2 Network ACL
+
+不同云厂商的网络 ACL 能力和实现方式存在差异，但通常可以理解为：
+
+```text
+Subnet / Network level
+```
+
+的访问控制。
+
+因此可以粗略区分：
+
+```text
+Security Group
+→ 资源 / 网卡层面的访问控制
+
+Network ACL
+→ 网络 / 子网层面的访问控制
+```
+
+实际规则模型需要根据具体云平台确认。
+
+## 7.3 Security Group 与 Linux Firewall
+
+云上通常存在多层安全控制：
+
+```text
+Internet
+   │
+   ▼
+Cloud Security Group
+   │
+   ▼
+ECS Network
+   │
+   ▼
+Linux Firewall
+   │
+   ▼
+Application
+```
+
+因此：
+
+```text
+安全组放行
+≠
+Linux 防火墙一定放行
+```
+
+反过来也一样：
+
+```text
+Linux Firewall 放行
+≠
+安全组一定放行
+```
+
+这也是云上 Linux 排障最常见的问题之一。
+
+# 八、云负载均衡 SLB / ELB
+
+## 8.1 为什么需要负载均衡
+
+假设只有一台 Web Server：
+
+```text
+Client
+  │
+  ▼
+Web Server
+```
+
+当服务器：
+
+```text
+宕机
+流量过大
+升级维护
+```
+
+整个业务可能受到影响。
+
+增加多个服务器：
+
+```text
+              Load Balancer
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+        Web 1     Web 2     Web 3
+```
+
+Load Balancer 负责将流量分发到后端。
+
+阿里云目前使用 SLB（Server Load Balancer）作为其负载均衡服务总称，并包含 ALB、NLB、CLB 等不同类型。 ([alibabacloud.com](https://www.alibabacloud.com/help/en/cloud-network-well-architected-design/ecs-application-delivery-network-design))
+
+AWS 常见对应产品：
+
+```text
+ELB
+ ├── ALB
+ └── NLB
+```
+
+## 8.2 四层与七层
+
+负载均衡大致可以：
+
+```text
+L4
+L7
+```
+
+来理解。
+
+### L4
+
+根据：
+
+```text
+IP
+Port
+TCP
+UDP
+```
+
+进行流量转发。
+
+例如：
+
+```text
+TCP :80
+TCP :443
+```
+
+### L7
+
+可以进一步理解：
+
+```text
+HTTP
+HTTPS
+Host
+Path
+Header
+```
+
+例如：
+
+```text
+example.com/api
+       ↓
+API Service
+
+example.com/
+       ↓
+Web Service
+```
+
+因此：
+
+```text
+L4
+→ TCP / UDP
+
+L7
+→ HTTP / HTTPS
+```
+
+## 8.3 后端服务器
+
+例如：
+
+```text
+SLB
+ │
+ ├── ECS 1
+ ├── ECS 2
+ └── ECS 3
+```
+
+SLB 需要知道：
+
+```text
+哪些实例可以接收流量
+```
+
+因此通常配置：
+
+```text
+Backend Server
+Backend Pool
+Listener
+```
+
+## 8.4 健康检查
+
+如果：
+
+```text
+ECS 1
+```
+
+已经：
+
+```text
+宕机
+```
+
+但负载均衡仍然把请求发送给它，就会出现：
+
+```text
+请求失败
+```
+
+因此需要：
+
+```text
+Health Check
+```
+
+例如：
+
+```text
+GET /health
+```
+
+如果：
+
+```text
+HTTP 200
+```
+
+认为：
+
+```text
+Healthy
+```
+
+否则：
+
+```text
+Unhealthy
+```
+
+流量就不再发送给异常实例。
+
+## 8.5 负载均衡并不等于高可用
+
+例如：
+
+```text
+SLB
+ │
+ └── 1 ECS
+```
+
+如果 ECS 挂了：
+
+```text
+SLB
+ ↓
+没有健康后端
+```
+
+仍然无法提供服务。
+
+因此完整高可用通常需要：
+
+```text
+Load Balancer
++
+Multiple Backend Instances
++
+Health Check
+```
+
+进一步还需要考虑：
+
+```text
+Multi-AZ
+```
+
+等架构。
+
+# 九、云 NAT Gateway 与公网访问
+
+## 9.1 为什么需要 NAT
+
+很多应用服务器不应该拥有公网 IP：
+
+```text
+Internet
+   X
+App Server
+```
+
+但它们可能需要访问：
+
+```text
+软件仓库
+API
+镜像仓库
+NTP
+第三方服务
+```
+
+这时候可以：
+
+```text
+Private ECS
+      │
+      ▼
+NAT Gateway
+      │
+      ▼
+Internet
+```
+
+也就是说：
+
+```text
+私网服务器
+→ 通过 NAT 出网
+```
+
+云厂商官方文档也将 NAT Gateway 用于让私网资源进行 Internet-bound outbound connectivity，并与入站负载均衡形成不同的流量方向。 ([aws.amazon.com](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNatGateway.html?utm_source=chatgpt.com))
+
+## 9.2 SNAT
+
+SNAT（Source Network Address Translation）修改：
+
+```text
+源 IP
+```
+
+例如：
+
+```text
+10.0.1.10
+```
+
+访问公网：
+
+```text
+8.8.8.8
+```
+
+经过 NAT：
+
+```text
+10.0.1.10
+   ↓
+203.0.113.10
+```
+
+公网看到：
+
+```text
+203.0.113.10
+```
+
+于是：
+
+```text
+Private IP
+   ↓
+NAT
+   ↓
+Public IP
+```
+
+## 9.3 NAT Gateway 主要解决出站
+
+典型架构：
+
+```text
+                Internet
+                    │
+                    ▲
+                    │
+                NAT Gateway
+                    ▲
+                    │
+            Private Subnet
+                    │
+             ┌──────┴──────┐
+             ▼             ▼
+           App 1         App 2
+```
+
+这里：
+
+```text
+App → Internet
+```
+
+可以通过 NAT。
+
+但：
+
+```text
+Internet → App
+```
+
+并不会因为 App 使用 NAT 就自然成立。
+
+因此：
+
+> **NAT Gateway 的出站能力不能简单等同于公网入站能力。**
+
+## 9.4 公网 IP
+
+云服务器常见两种 IP：
+
+```text
+Private IP
+Public IP
+```
+
+私网：
+
+```text
+10.x.x.x
+172.16.x.x
+192.168.x.x
+```
+
+公网：
+
+```text
+Internet-routable Address
+```
+
+生产环境中更推荐：
+
+```text
+应用服务器
+→ Private IP
+
+公网入口
+→ SLB / CDN / Gateway
+```
+
+而不是：
+
+```text
+每台 ECS
+→ 一个公网 IP
+```
+
+# 十、云存储
+
+云存储主要可以分为：
+
+```text
+Block Storage
+Object Storage
+File Storage
+```
+
+三种类型解决的问题并不相同。
+
+```text
+              Cloud Storage
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+      Block       Object       File
+        │           │           │
+      Cloud       OSS/S3      NAS/EFS
+       Disk
+```
+
+# 十一、块存储
+
+## 11.1 Block Storage
+
+块存储最接近传统硬盘。
+
+例如：
+
+```text
+ECS
+ │
+ └── Block Disk
+       │
+       ▼
+     /dev/vdb
+```
+
+Linux 需要进一步：
+
+```bash
+mkfs
+mount
+```
+
+才能使用文件系统。
+
+例如：
+
+```bash
+sudo mkfs.ext4 /dev/vdb
+sudo mkdir /data
+sudo mount /dev/vdb /data
+```
+
+适合：
+
+```text
+操作系统
+数据库
+应用数据
+高 I/O 工作负载
+```
+
+常见云厂商：
+
+```text
+Alibaba Cloud → ESSD / Cloud Disk
+AWS → EBS
+Azure → Managed Disks
+```
+
+## 11.2 块存储的特点
+
+可以把它理解成：
+
+```text
+“云上的硬盘”
+```
+
+因此：
+
+```text
+文件系统
+权限
+目录
+挂载
+```
+
+等仍然主要由操作系统负责。
+
+# 十二、对象存储
+
+## 12.1 Object Storage
+
+对象存储和块存储完全不同。
+
+例如：
+
+```text
+Bucket
+ │
+ ├── image/a.jpg
+ ├── image/b.png
+ ├── video/demo.mp4
+ └── backup/db.sql
+```
+
+这里：
+
+```text
+Bucket
+→ 存储空间
+
+Object
+→ 一个对象
+```
+
+阿里云：
+
+```text
+OSS
+Object Storage Service
+```
+
+AWS：
+
+```text
+S3
+Simple Storage Service
+```
+
+Azure：
+
+```text
+Blob Storage
+```
+
+## 12.2 对象存储访问方式
+
+对象存储通常通过：
+
+```text
+HTTP / HTTPS API
+```
+
+访问。
+
+例如：
+
+```text
+Application
+   │
+   │ HTTPS
+   ▼
+Object Storage
+```
+
+而不是：
+
+```text
+mount /dev/xxx
+```
+
+所以：
+
+```text
+Block Storage
+→ 类似磁盘
+
+Object Storage
+→ 类似通过 API 操作对象
+```
+
+## 12.3 对象存储的典型场景
+
+非常适合：
+
+```text
+图片
+视频
+备份
+日志归档
+安装包
+静态资源
+数据集
+模型文件
+```
+
+例如 Web 应用：
+
+```text
+User
+  │
+  ▼
+Application
+  │
+  ├── Metadata → Database
+  │
+  └── Image → OSS
+```
+
+这样就不需要把大量图片直接塞进数据库。
+
+## 12.4 Bucket
+
+对象存储通常以：
+
+```text
+Bucket
+```
+
+作为逻辑存储空间。
+
+例如：
+
+```text
+my-app-prod
+```
+
+里面：
+
+```text
+images/
+videos/
+backups/
+```
+
+可以通过权限控制决定：
+
+```text
+谁可以读
+谁可以写
+谁可以删除
+```
+
+# 十三、文件存储
+
+## 13.1 File Storage
+
+文件存储提供共享文件系统。
+
+例如：
+
+```text
+Server A ─┐
+Server B ─┼── File Storage
+Server C ─┘
+```
+
+多个服务器可以访问：
+
+```text
+/shared
+```
+
+这和：
+
+```text
+Block Storage
+```
+
+的最大区别之一是：
+
+```text
+多个主机共享访问
+```
+
+云平台中常见：
+
+```text
+Alibaba Cloud NAS
+AWS EFS
+Azure Files
+```
+
+## 13.2 文件存储适合什么
+
+例如：
+
+```text
+共享目录
+上传文件
+多实例共享文件
+媒体文件
+用户 Home
+```
+
+典型 Web 集群：
+
+```text
+          Load Balancer
+                │
+       ┌────────┼────────┐
+       ▼        ▼        ▼
+      App1     App2     App3
+       │        │        │
+       └────────┼────────┘
+                ▼
+          Shared File
+```
+
+这样三个实例都可以访问：
+
+```text
+/shared/uploads
+```
+
+# 十四、三类云存储对比
+
+| 类型 | 访问方式 | 典型场景 | 代表产品 |
+| --- | --- | --- | --- |
+| Block | 块设备 / 文件系统 | OS、数据库、应用磁盘 | ESSD、EBS |
+| Object | API / HTTP | 图片、视频、备份、归档 | OSS、S3 |
+| File | 共享文件系统 | 多实例共享文件 | NAS、EFS |
+
+一句话：
+
+```text
+Block
+→ 像一块硬盘
+
+Object
+→ 像一个通过 API 访问的文件仓库
+
+File
+→ 像一个可以被多台机器挂载的共享目录
+```
+
+# 十五、云存储中的备份
+
+云上的存储并不意味着：
+
+```text
+天然不会丢数据
+```
+
+例如：
+
+```text
+ECS
+```
+
+被误删除：
+
+```text
+实例删除
+```
+
+如果数据只存在：
+
+```text
+实例本地临时存储
+```
+
+仍然可能丢失。
+
+因此需要：
+
+```text
+Backup
+Snapshot
+Object Storage
+Replication
+```
+
+等机制。
+
+例如：
+
+```text
+Database
+   │
+   ▼
+Backup
+   │
+   ▼
+OSS / S3
+```
+
+这样即使：
+
+```text
+ECS 故障
+```
+
+还可以：
+
+```text
+Restore
+```
+
+恢复数据。
+
+# 十六、云服务器快照
+
+云平台通常提供：
+
+```text
+Snapshot
+```
+
+例如：
+
+```text
+Disk
+ │
+ ▼
+Snapshot
+ │
+ ▼
+New Disk
+```
+
+可以用于：
+
+```text
+升级前备份
+故障恢复
+环境复制
+镜像制作
+```
+
+但要注意：
+
+```text
+Snapshot
+```
+
+主要是：
+
+```text
+基础设施层面的磁盘状态保护
+```
+
+而：
+
+```text
+Database Backup
+```
+
+则更关注数据库一致性和逻辑恢复。
+
+因此：
+
+> **云盘快照不能简单等同于数据库备份。**
+
+# 十七、云安全架构
+
+一个比较常见的 Web 架构：
+
+```text
+                         Internet
+                            │
+                            ▼
+                           CDN
+                            │
+                            ▼
+                           SLB
+                            │
+                  ┌─────────┴─────────┐
+                  ▼                   ▼
+             Private Subnet      Private Subnet
+                  │                   │
+                App 1               App 2
+                  │                   │
+                  └─────────┬─────────┘
+                            ▼
+                         Database
+```
+
+同时：
+
+```text
+App
+ │
+ └── NAT Gateway
+         │
+         ▼
+      Internet
+```
+
+需要注意：
+
+```text
+CDN
+→ 靠近用户缓存和加速内容
+
+SLB
+→ 分发请求
+
+NAT
+→ 私网资源出站
+
+Security Group
+→ 控制访问
+
+VPC
+→ 网络隔离
+```
+
+这些组件职责不同。
+
+# 十八、云服务器部署完整 Web 应用
+
+现在把前面的组件组合起来。
+
+## 18.1 基础架构
+
+例如：
+
+```text
+                     Internet
+                         │
+                         ▼
+                        DNS
+                         │
+                         ▼
+                       SLB
+                         │
+            ┌────────────┴────────────┐
+            ▼                         ▼
+        App ECS 1                 App ECS 2
+        Private IP                Private IP
+            │                         │
+            └────────────┬────────────┘
+                         ▼
+                      Redis
+                         │
+                         ▼
+                     Database
+```
+
+出口：
+
+```text
+App ECS
+   │
+   ▼
+NAT Gateway
+   │
+   ▼
+Internet
+```
+
+静态资源：
+
+```text
+App
+ │
+ └──► OSS
+```
+
+# 十九、DNS
+
+用户首先通过：
+
+```text
+example.com
+```
+
+访问网站。
+
+DNS：
+
+```text
+example.com
+     │
+     ▼
+DNS Record
+     │
+     ▼
+SLB Public IP / CNAME
+```
+
+于是：
+
+```text
+Browser
+   │
+   │ DNS
+   ▼
+SLB Address
+   │
+   ▼
+Web Application
+```
+
+常见 DNS 记录：
+
+```text
+A
+AAAA
+CNAME
+MX
+TXT
+```
+
+这里最重要的是理解：
+
+```text
+DNS
+→ 名称解析
+
+SLB
+→ 流量接入
+```
+
+两者不是同一个组件。
+
+# 二十、Nginx
+
+如果 App 不直接对公网提供 HTTP，可以：
+
+```text
+SLB
+  │
+  ▼
+Nginx
+  │
+  ▼
+Application
+```
+
+Nginx 可以负责：
+
+```text
+反向代理
+TLS
+静态资源
+请求转发
+```
+
+例如：
+
+```text
+example.com/api
+        │
+        ▼
+      Nginx
+        │
+        ▼
+    localhost:8080
+```
+
+# 二十一、数据库安全
+
+数据库通常不应该：
+
+```text
+Internet
+   │
+   ▼
+Database:5432
+```
+
+更合理：
+
+```text
+Internet
+   │
+   ▼
+SLB
+   │
+   ▼
+App
+   │
+   ▼
+Private Database
+```
+
+安全组：
+
+```text
+DB
+↑
+只允许 App Security Group
+```
+
+例如：
+
+```text
+App → TCP 5432 → DB
+```
+
+但：
+
+```text
+Internet → TCP 5432 → DB
+```
+
+不允许。
+
+这就是：
+
+```text
+分层网络
++
+最小权限
+```
+
+# 二十二、一个完整云 Web 请求流程
+
+用户访问：
+
+```text
+https://example.com
+```
+
+整个过程可以理解为：
+
+```text
+① DNS
+   │
+   ▼
+example.com
+   │
+   ▼
+② CDN / SLB
+   │
+   ▼
+③ Nginx
+   │
+   ▼
+④ Application
+   │
+   ├──► Redis
+   │
+   ├──► Database
+   │
+   └──► OSS
+```
+
+如果应用需要访问公网：
+
+```text
+Application
+     │
+     ▼
+NAT Gateway
+     │
+     ▼
+Internet
+```
+
+因此完整的云应用并不是：
+
+```text
+一台 ECS
+```
+
+而是：
+
+```text
+DNS
+ ↓
+CDN / SLB
+ ↓
+ECS
+ ↓
+Database / Redis / OSS
+ ↓
+NAT
+```
+
+等多个基础设施组件共同组成。
+
+# 二十三、云上 Linux 故障排查
+
+云上故障排查最大的特点：
+
+```text
+Linux 本身
++
+云平台基础设施
+```
+
+两个层次同时存在。
+
+例如用户访问失败：
+
+```text
+Internet
+   │
+   ▼
+DNS
+   │
+   ▼
+SLB
+   │
+   ▼
+Security Group
+   │
+   ▼
+ECS
+   │
+   ▼
+Linux Firewall
+   │
+   ▼
+Nginx
+   │
+   ▼
+Application
+   │
+   ▼
+Database
+```
+
+任何一层异常都可能：
+
+```text
+访问失败
+```
+
+# 二十四、实例问题
+
+首先检查：
+
+```text
+ECS 是否 Running
+```
+
+然后：
+
+```text
+CPU
+Memory
+Disk
+Network
+System Status
+```
+
+Linux 内部再：
+
+```bash
+uptime
+top
+free -h
+df -h
+ss -lntp
+systemctl status nginx
+```
+
+如果：
+
+```text
+ECS = Running
+```
+
+不代表：
+
+```text
+Nginx = Running
+```
+
+更不代表：
+
+```text
+网站 = 正常
+```
+
+# 二十五、安全组问题
+
+例如：
+
+```text
+浏览器
+   ↓
+ECS:8080
+```
+
+连接失败。
+
+先检查：
+
+```text
+Security Group
+```
+
+是否允许：
+
+```text
+TCP 8080
+```
+
+然后检查：
+
+```bash
+ss -lntp | grep 8080
+```
+
+如果：
+
+```text
+安全组允许
+```
+
+但是：
+
+```text
+Linux 服务没有监听
+```
+
+仍然无法访问。
+
+因此：
+
+```text
+Cloud Firewall
++
+Linux Firewall
++
+Application Port
+```
+
+需要一起检查。
+
+# 二十六、云网络故障
+
+检查 VPC：
+
+```text
+VPC
+ ↓
+Subnet / vSwitch
+ ↓
+Route Table
+ ↓
+Security Group
+ ↓
+ECS
+```
+
+例如私网服务器无法访问 Internet：
+
+```text
+ECS
+ ↓
+Route Table
+ ↓
+NAT Gateway
+ ↓
+EIP
+ ↓
+Internet
+```
+
+逐层检查：
+
+```text
+有没有默认路由？
+NAT Gateway 是否存在？
+NAT 规则是否正确？
+EIP 是否正常？
+安全策略是否允许？
+```
+
+阿里云当前文档也强调，VPC 默认与 Internet 隔离，需要通过 EIP、NAT Gateway、SLB 等机制提供具体的公网访问能力。 ([alibabacloud.com](https://www.alibabacloud.com/help/en/vpc/public-network-access/))
+
+# 二十七、磁盘故障
+
+云服务器常见：
+
+```text
+磁盘空间不足
+磁盘 I/O 异常
+文件系统损坏
+数据盘未挂载
+```
+
+先：
+
+```bash
+df -h
+```
+
+再：
+
+```bash
+df -i
+```
+
+查看磁盘：
+
+```bash
+lsblk
+```
+
+查看挂载：
+
+```bash
+mount
+```
+
+进一步：
+
+```bash
+iostat -xz 1
+```
+
+如果发现：
+
+```text
+/dev/vdb
+```
+
+存在但没有挂载：
+
+```text
+lsblk
+```
+
+可以进一步判断：
+
+```text
+分区
+文件系统
+挂载点
+/etc/fstab
+```
+
+# 二十八、服务故障
+
+例如：
+
+```text
+ECS
+→ 正常
+
+端口
+→ 开放
+
+Nginx
+→ 无法启动
+```
+
+继续：
+
+```bash
+systemctl status nginx
+journalctl -u nginx
+```
+
+检查配置：
+
+```bash
+nginx -t
+```
+
+因此云上 Linux 故障排查应该始终：
+
+```text
+云平台层
++
+Linux 层
++
+应用层
+```
+
+一起考虑。
+
+# 二十九、SLB 故障排查
+
+如果：
+
+```text
+用户
+ ↓
+SLB
+ ↓
+ECS
+```
+
+访问失败，可以依次检查：
+
+```text
+DNS
+ ↓
+SLB Listener
+ ↓
+Backend Server
+ ↓
+Health Check
+ ↓
+Security Group
+ ↓
+ECS Port
+ ↓
+Application
+```
+
+例如：
+
+```text
+Health Check = Unhealthy
+```
+
+这时应该检查：
+
+```text
+端口
+路径
+协议
+应用监听地址
+安全组
+Nginx
+```
+
+而不是优先怀疑：
+
+```text
+SLB 本身坏了
+```
+
+# 三十、NAT 故障排查
+
+私网服务器：
+
+```bash
+curl https://example.com
+```
+
+失败。
+
+检查：
+
+```text
+Route Table
+ ↓
+NAT Gateway
+ ↓
+SNAT
+ ↓
+EIP
+ ↓
+Security Policy
+```
+
+然后在 Linux：
+
+```bash
+ip route
+```
+
+确认默认路由。
+
+进一步：
+
+```bash
+curl -v https://example.com
+```
+
+查看：
+
+```text
+DNS
+TCP
+TLS
+HTTP
+```
+
+分别在哪一层失败。
+
+# 三十一、云存储故障排查
+
+## 31.1 Block Storage
+
+检查：
+
+```bash
+lsblk
+df -h
+mount
+```
+
+确认：
+
+```text
+磁盘存在
+分区存在
+文件系统存在
+挂载正常
+空间足够
+```
+
+## 31.2 Object Storage
+
+检查：
+
+```text
+Endpoint
+Bucket
+Credentials
+Network
+Permission
+```
+
+常见问题：
+
+```text
+AccessDenied
+NoSuchBucket
+Timeout
+DNS failure
+```
+
+所以对象存储的问题通常不只是：
+
+```text
+“磁盘有没有挂载”
+```
+
+而是：
+
+```text
+API
++
+网络
++
+权限
+```
+
+## 31.3 File Storage
+
+检查：
+
+```text
+Mount Target
+Network
+Security Group
+DNS
+Mount Options
+```
+
+Linux：
+
+```bash
+mount
+df -h
+```
+
+如果共享目录不可访问：
+
+```text
+网络
++
+认证
++
+挂载
++
+后端文件存储
+```
+
+需要一起检查。
+
+# 三十二、云上监控
+
+到了云环境之后，监控通常分成：
+
+```text
+Cloud Metrics
++
+Linux Metrics
++
+Application Metrics
+```
+
+例如：
+
+```text
+Cloud
+├── ECS CPU
+├── Network
+├── Disk
+└── Load Balancer
+
+Linux
+├── Process
+├── Memory
+├── Filesystem
+└── Socket
+
+Application
+├── QPS
+├── Latency
+└── Error Rate
+```
+
+因此：
+
+```text
+云厂商监控
+```
+
+并不能完全代替：
+
+```text
+Prometheus
+Grafana
+```
+
+实际生产环境很可能两者同时使用。
+
+# 三十三、云计算与 Docker / Kubernetes
+
+之前学习了：
+
+```text
+Docker
+Kubernetes
+```
+
+现在放到云上：
+
+```text
+                  Cloud
+                    │
+               VPC Network
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+       ECS         SLB        Storage
+        │
+        ▼
+      Docker
+        │
+        ▼
+   Kubernetes
+        │
+        ▼
+      Pods
+```
+
+云平台提供：
+
+```text
+Compute
+Network
+Storage
+Load Balancer
+```
+
+而：
+
+```text
+Docker
+→ 容器
+
+Kubernetes
+→ 容器编排
+```
+
+因此：
+
+> **云计算提供基础设施，容器提供应用打包方式，Kubernetes 负责在这些基础设施上运行和管理容器化工作负载。**
+
+# 三十四、云计算与 Ansible / CI/CD
+
+前面还学习了：
+
+```text
+Ansible
+Jenkins
+Docker
+Kubernetes
+```
+
+现在可以组成：
+
+```text
+Git
+ │
+ ▼
+Jenkins
+ │
+ ├── Build
+ ├── Test
+ └── Docker Image
+        │
+        ▼
+     Registry
+        │
+        ▼
+     Ansible
+        │
+        ▼
+    Cloud ECS
+```
+
+或者：
+
+```text
+Git
+ │
+ ▼
+Jenkins
+ │
+ ▼
+Docker Image
+ │
+ ▼
+Registry
+ │
+ ▼
+Kubernetes
+ │
+ ▼
+Cloud
+```
+
+这就已经非常接近真实的：
+
+```text
+云上 DevOps
+```
+
+体系。
+
+# 三十五、一个典型公有云 Web 架构
+
+综合前面的知识，可以建立一个比较完整的架构：
+
+```text
+                         Internet
+                            │
+                            ▼
+                           DNS
+                            │
+                            ▼
+                           CDN
+                            │
+                            ▼
+                           SLB
+                            │
+              ┌─────────────┼─────────────┐
+              ▼             ▼             ▼
+           ECS App1      ECS App2      ECS App3
+          Private IP     Private IP     Private IP
+              │             │             │
+              └─────────────┼─────────────┘
+                            │
+               ┌────────────┼────────────┐
+               ▼            ▼            ▼
+             Redis       Database       OSS
+                            │
+                         Backup
+                            │
+                            ▼
+                       Object Storage
+
+ECS App
+   │
+   ▼
+NAT Gateway
+   │
+   ▼
+Internet
+```
+
+安全控制：
+
+```text
+Internet
+   │
+   ▼
+SLB
+   │
+   ▼
+Security Group
+   │
+   ▼
+ECS
+   │
+   ▼
+Database
+```
+
+数据库不直接：
+
+```text
+0.0.0.0/0
+```
+
+暴露到互联网。
+
+# 三十六、云基础设施的核心关系
+
+到这里可以把各个组件串成：
+
+```text
+                  Cloud Platform
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+      Compute         Network          Storage
+        │               │                │
+       ECS              VPC              │
+        │          ┌────┼────┐           │
+        │          ▼    ▼    ▼           │
+        │       Subnet Route SG           │
+        │               │                │
+        │              NAT              Block
+        │               │               Object
+        │              SLB               File
+        │               │                │
+        └───────────────┼────────────────┘
+                        ▼
+                    Application
+```
+
+可以把它理解成：
+
+```text
+ECS
+→ 计算在哪里运行
+
+VPC
+→ 网络在哪里运行
+
+Subnet
+→ 网络怎么划分
+
+Route Table
+→ 流量往哪里走
+
+Security Group
+→ 谁可以访问
+
+SLB
+→ 请求发给谁
+
+NAT
+→ 私网如何访问公网
+
+Storage
+→ 数据存在哪里
+```
+
+# 三十七、云上故障排查总模型
+
+云上遇到：
+
+```text
+“网站打不开”
+```
+
+可以建立固定思维：
+
+```text
+                    User Request
+                         │
+                         ▼
+                        DNS
+                         │
+                         ▼
+                     CDN / SLB
+                         │
+                         ▼
+                    Load Balancer
+                         │
+                         ▼
+                   Security Group
+                         │
+                         ▼
+                        ECS
+                         │
+                  ┌──────┴──────┐
+                  ▼             ▼
+                Linux        Network
+                  │             │
+                  ▼             ▼
+              Nginx/App     Route/NAT
+                  │
+                  ▼
+              Redis / DB
+                  │
+                  ▼
+               Storage
+```
+
+每一层都有自己的检查方法。
+
+Linux：
+
+```bash
+top
+free -h
+df -h
+ss -lntp
+systemctl status
+journalctl
+```
+
+网络：
+
+```bash
+ip addr
+ip route
+ss
+curl
+ping
+traceroute
+```
+
+云平台：
+
+```text
+Instance
+Security Group
+Route Table
+Load Balancer
+NAT Gateway
+Storage
+```
+
+# 三十八、云计算中的高可用
+
+“上云”本身并不等于：
+
+```text
+高可用
+```
+
+例如：
+
+```text
+SLB
+ │
+ └── ECS
+```
+
+依然存在：
+
+```text
+单点
+```
+
+更合理：
+
+```text
+              SLB
+           /    |    \
+          /     |     \
+       ECS1    ECS2    ECS3
+         │       │       │
+         └───────┼───────┘
+                 │
+              Database
+```
+
+进一步：
+
+```text
+Availability Zone A
+       │
+       ├── ECS
+       └── Storage
+
+Availability Zone B
+       │
+       ├── ECS
+       └── Storage
+```
+
+这样即使某个：
+
+```text
+实例
+```
+
+甚至：
+
+```text
+可用区
+```
+
+发生故障，系统仍可能保持服务。
+
+高可用最终依赖：
+
+```text
+冗余
++
+故障检测
++
+流量切换
++
+数据恢复
+```
+
+而不是简单地：
+
+```text
+“买一台更贵的 ECS”
+```
+
+# 三十九、云计算的成本意识
+
+云上资源是：
+
+```text
+弹性
++
+按使用付费
+```
+
+因此运维不仅需要考虑：
+
+```text
+可用性
+性能
+安全
+```
+
+还需要考虑：
+
+```text
+成本
+```
+
+例如：
+
+```text
+ECS
+磁盘
+公网带宽
+NAT Gateway
+SLB
+OSS
+日志
+快照
+```
+
+都有可能产生费用。
+
+因此生产架构需要考虑：
+
+```text
+资源是否过大？
+是否存在闲置？
+日志保留是否过长？
+备份是否合理？
+公网流量是否过高？
+```
+
+最终目标不是：
+
+```text
+最贵
+```
+
+而是：
+
+```text
+满足 SLA
++
+合理成本
+```
+
+# 四十、总结
+
+云计算最核心的基础组件，可以整理成：
+
+```text
+ECS
+→ 计算
+
+VPC
+→ 私有网络
+
+Subnet
+→ 网络划分
+
+Route Table
+→ 流量路径
+
+Security Group
+→ 网络访问控制
+
+SLB
+→ 负载均衡
+
+NAT Gateway
+→ 私网出站
+
+Block Storage
+→ 云硬盘
+
+Object Storage
+→ 对象文件
+
+File Storage
+→ 共享文件系统
+```
+
+它们最终组合成：
+
+```text
+                         Internet
+                            │
+                            ▼
+                           DNS
+                            │
+                            ▼
+                           SLB
+                            │
+                  ┌─────────┴─────────┐
+                  ▼                   ▼
+                ECS                  ECS
+                  │                   │
+                  └─────────┬─────────┘
+                            ▼
+                     Private Network
+                       │          │
+                       ▼          ▼
+                     Redis       DB
+                       │
+                       ▼
+                      OSS
+
+                    ECS
+                     │
+                     ▼
+                 NAT Gateway
+                     │
+                     ▼
+                  Internet
+```
+
+从运维角度，可以把整个云基础设施理解为：
+
+```text
+计算
+ ↓
+网络
+ ↓
+安全
+ ↓
+存储
+ ↓
+流量
+ ↓
+监控
+ ↓
+故障恢复
+```
+
+而排查问题时：
+
+```text
+DNS
+ ↓
+Load Balancer
+ ↓
+Security Group
+ ↓
+VPC / Route
+ ↓
+ECS
+ ↓
+Linux
+ ↓
+Application
+ ↓
+Database / Storage
+```
+
+必须逐层定位。
+
+> **云计算真正改变的并不是 Linux 服务器本身，而是把计算、网络、存储、安全和流量管理等基础设施能力变成了可以通过 API 快速创建、修改和销毁的资源。对于运维人员而言，核心能力也从“会登录一台服务器”进一步扩展成“理解整个云上基础设施是如何协同工作的”。**
+
+## 外部参考
+
+- [Alibaba Cloud ECS](https://www.alibabacloud.com/help/en/ecs/)
+- [Alibaba Cloud VPC](https://www.alibabacloud.com/help/en/vpc/)
+- [Alibaba Cloud Server Load Balancer](https://www.alibabacloud.com/help/en/slb/)
+- [Alibaba Cloud NAT Gateway](https://www.alibabacloud.com/help/en/nat-gateway/)
+- [Alibaba Cloud Object Storage Service](https://www.alibabacloud.com/help/en/oss/)
+- [AWS VPC Documentation](https://docs.aws.amazon.com/vpc/)
+- [AWS Amazon EBS](https://docs.aws.amazon.com/ebs/)
+- [AWS Amazon S3](https://docs.aws.amazon.com/s3/)
+- [Microsoft Azure Virtual Network](https://learn.microsoft.com/en-us/azure/virtual-network/)
