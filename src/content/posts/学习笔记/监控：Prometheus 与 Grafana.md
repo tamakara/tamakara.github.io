@@ -1,7 +1,8 @@
 ---
-title: 监控基础：Prometheus 与 Grafana
+title: 监控：Prometheus 与 Grafana
+description: '介绍指标采集、Prometheus 查询、Grafana 可视化和基础告警流程。'
+updated: 2026-09-19
 published: 2026-09-14T04:20:11Z
-description: ''
 image: ''
 tags: [Prometheus, Grafana, 监控, Linux, 运维]
 category: 学习笔记
@@ -9,7 +10,7 @@ draft: false
 lang: ''
 ---
 
-> 上一篇介绍了如何使用 Linux 自带工具观察 CPU、Memory、Disk、Network 和服务状态。
+> 监控系统需要持续采集、保存、查询、可视化和告警。
 >
 > 但这些命令主要解决“现在发生了什么”，而监控系统需要进一步解决“持续采集、保存、查询、可视化和告警”。
 >
@@ -19,7 +20,7 @@ lang: ''
 
 ## 1.1 为什么需要监控系统
 
-上一篇中，我们可以执行：
+在 Linux 主机上，可以先用以下命令查看当前状态：
 
 ```bash
 top

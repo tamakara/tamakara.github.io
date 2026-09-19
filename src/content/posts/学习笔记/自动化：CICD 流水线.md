@@ -1,5 +1,7 @@
 ---
-title: 自动化基础：CICD 流水线
+title: 自动化：CICD 流水线
+description: '说明 CI/CD 中的构建、测试、制品、发布、验证和回滚流程。'
+updated: 2026-09-19
 published: 2026-09-14T05:03:34Z
 description: ''
 image: ''

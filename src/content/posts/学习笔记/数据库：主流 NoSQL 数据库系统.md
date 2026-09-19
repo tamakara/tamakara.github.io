@@ -1,5 +1,7 @@
 ---
-title: 数据库基础：主流 NoSQL 数据库系统
+title: 数据库：主流 NoSQL 数据库系统
+description: '比较 Redis、MongoDB 和搜索型数据库的用途、基本操作、持久化与常见问题。'
+updated: 2026-09-19
 published: 2026-09-13T23:34:12Z
 image: ''
 tags: [数据库, NoSQL, Redis, MongoDB, Milvus]

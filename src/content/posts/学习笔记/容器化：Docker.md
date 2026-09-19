@@ -1,5 +1,7 @@
 ---
-title: 容器化基础：Docker
+title: 容器化：Docker
+description: '从镜像、容器、网络和数据卷入门 Docker，并说明常见运行与排障方法。'
+updated: 2026-09-19
 published: 2026-09-14T02:48:40Z
 description: ''
 image: ''

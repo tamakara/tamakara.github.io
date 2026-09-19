@@ -1,5 +1,7 @@
 ---
-title: 自动化基础：Ansible
+title: 自动化：Ansible
+description: '使用 Inventory 和 Playbook 描述主机配置，完成可重复的常见自动化任务。'
+updated: 2026-09-19
 published: 2026-09-14T04:55:56Z
 description: ''
 image: ''
@@ -2381,7 +2383,7 @@ Production Server
 自动部署
 ```
 
-不过 CI/CD 流程将在后续自动化与发布相关内容中进一步展开。
+Ansible 可以作为发布流程中的一个执行步骤，具体编排取决于现有流水线。
 
 # 三十七、Ansible 项目推荐目录
 
