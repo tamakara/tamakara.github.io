@@ -3,7 +3,6 @@ title: 数据库：主流 SQL 数据库系统
 description: '从表、查询、事务、索引到备份恢复，介绍常见关系型数据库的基础使用。'
 updated: 2026-09-19
 published: 2026-09-13T23:31:41Z
-description: ''
 image: ''
 tags: [MySQL, PostgreSQL, SQL, 数据库, 备份, 恢复, 索引, 高可用]
 category: 学习笔记

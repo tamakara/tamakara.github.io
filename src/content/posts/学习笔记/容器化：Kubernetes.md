@@ -3,7 +3,6 @@ title: 容器化：Kubernetes
 description: '介绍 Kubernetes 的集群、Pod、Deployment、Service 和配置对象，覆盖基础发布与排障。'
 updated: 2026-09-19
 published: 2026-09-14T03:14:54Z
-description: ''
 image: ''
 tags: [Kubernetes, K8s, 容器化, Linux, 运维]
 category: 学习笔记

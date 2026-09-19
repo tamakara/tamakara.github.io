@@ -3,7 +3,6 @@ title: 监控：Linux 服务监控
 description: '使用 Linux 常用工具观察服务状态、进程、资源、网络和日志，并按症状定位故障。'
 updated: 2026-09-19
 published: 2026-09-14T04:09:20Z
-description: ''
 image: ''
 tags: [Linux, 监控, systemd, 运维]
 category: 学习笔记

@@ -3,7 +3,6 @@ title: 自动化：Ansible
 description: '使用 Inventory 和 Playbook 描述主机配置，完成可重复的常见自动化任务。'
 updated: 2026-09-19
 published: 2026-09-14T04:55:56Z
-description: ''
 image: ''
 tags: [Ansible, 自动化, Linux, 运维]
 category: 学习笔记
