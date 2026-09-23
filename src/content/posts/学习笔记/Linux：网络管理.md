@@ -2,7 +2,6 @@
 title: Linux：网络管理
 published: 2026-09-13T09:46:16Z
 description: 'Linux 网络管理包括接口与地址配置、路由、名称解析、访问控制和服务连通性验证。'
-updated: 2026-09-19
 image: ''
 tags: [Linux, 网络, 网络管理, Netfilter, iptables, firewalld, nftables, TCP/IP]
 category: 学习笔记
@@ -81,6 +80,41 @@ curl -v --connect-timeout 5 --max-time 15 https://example.com/
 这是常见 IP 路径的简化模型。判断规则位置时，先确认流量是访问本机还是经本机转发；容器发布端口可能走转发路径，不能只检查 input。
 
 iptables 的“表”按处理用途组织，例如 filter 和 nat；nftables 的表是对象容器，基础链通过 hook 和 priority 连接到处理路径。不要把“四表五链”当作所有现代防火墙的完整模型。
+
+## iptables 的四表五链
+
+“四表五链”是面试中常用的 iptables 记忆框架。**表**表示规则的处理目的，**链**表示数据包经过的处理位置；一条规则必须放在具体的“表 + 链”中才会生效。常见四张表的职责如下：
+
+| 表 | 主要用途 | 常见动作或规则 |
+| --- | --- | --- |
+| `raw` | 在连接跟踪前处理报文 | 设置 `NOTRACK`，较少直接使用 |
+| `mangle` | 修改报文属性或打标记 | 修改 TTL、设置 mark、调整服务质量 |
+| `nat` | 建立地址或端口转换映射 | `DNAT`、`SNAT`、`MASQUERADE` |
+| `filter` | 按条件允许或丢弃报文 | `ACCEPT`、`DROP`、`REJECT` |
+
+传统资料有时还会提到 `security` 表，它用于 SELinux 等强制访问控制场景；因此“四表”是常见教学口径，并不是 iptables 支持的全部表。
+
+五条内置链对应数据包在主机中的位置：
+
+| 链 | 经过时机 | 典型流量 |
+| --- | --- | --- |
+| `PREROUTING` | 路由判断前 | 外部进入主机的报文、待转发报文 |
+| `INPUT` | 路由判断后、交给本机进程前 | 访问本机服务的报文 |
+| `FORWARD` | 路由判断后、转发到其他接口前 | 经过本机转发的报文 |
+| `OUTPUT` | 本机进程生成报文后 | 本机主动发起的连接 |
+| `POSTROUTING` | 路由确定、发出接口前 | 本机发出或转发出去的报文 |
+
+并不是每张表都挂在所有链上。常见对应关系是：`filter` 使用 `INPUT`、`FORWARD`、`OUTPUT`；`nat` 主要使用 `PREROUTING`、`OUTPUT`、`POSTROUTING`；`mangle` 可出现在五条链；`raw` 主要使用 `PREROUTING` 和 `OUTPUT`。排查规则时先确定流量类型，再选择表和链，否则容易在正确的规则中寻找错误的位置。
+
+只读查看某张表可以显式指定 `-t`，例如：
+
+```bash
+sudo iptables -t filter -L -n -v --line-numbers
+sudo iptables -t nat -L -n -v --line-numbers
+sudo iptables -t mangle -L -n -v --line-numbers
+```
+
+这些命令只能说明当前 iptables 视角下的规则和计数器；如果系统实际由 nftables、firewalld、容器运行时或云平台维护，还要检查对应管理层的配置。
 
 ## 只读检查
 
